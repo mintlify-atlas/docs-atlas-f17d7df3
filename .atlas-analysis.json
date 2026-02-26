@@ -1,0 +1,91 @@
+{
+  "projectType": "saas",
+  "projectName": "Pointer",
+  "projectDescription": "A modern note-taking and knowledge management platform for doing your best thinking",
+  "theme": "almond",
+  "primaryColor": "#78716c",
+  "lightColor": "#d6d3d1",
+  "darkColor": "#44403c",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": ["introduction", "quickstart"]
+          },
+          {
+            "group": "Core Features",
+            "pages": [
+              "features/notes",
+              "features/collaboration",
+              "features/graph-view",
+              "features/whiteboards",
+              "features/tasks"
+            ]
+          },
+          {
+            "group": "Platform",
+            "pages": ["platform/desktop-app", "platform/web-app"]
+          }
+        ]
+      },
+      {
+        "tab": "Guides",
+        "groups": [
+          {
+            "group": "Using Pointer",
+            "pages": [
+              "guides/editor",
+              "guides/keyboard-shortcuts",
+              "guides/organizing-notes",
+              "guides/collaboration"
+            ]
+          },
+          {
+            "group": "Advanced",
+            "pages": ["guides/data-export", "guides/integrations"]
+          }
+        ]
+      },
+      {
+        "tab": "Development",
+        "groups": [
+          {
+            "group": "Technical",
+            "pages": [
+              "development/architecture",
+              "development/tech-stack",
+              "development/self-hosting"
+            ]
+          },
+          {
+            "group": "Contributing",
+            "pages": ["development/contributing", "development/testing"]
+          }
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "Rich text editor with TipTap",
+    "Real-time collaboration with Yjs",
+    "Knowledge graph visualization",
+    "Interactive whiteboards with Excalidraw",
+    "Task management system",
+    "Desktop app via Tauri",
+    "Multi-tenant architecture with Convex",
+    "AI-powered suggestions"
+  ],
+  "publicApiSurface": [
+    "notes CRUD operations",
+    "whiteboards CRUD operations",
+    "task management endpoints",
+    "collaborative editing sessions",
+    "graph relationship queries",
+    "image upload and references",
+    "document sharing",
+    "version history"
+  ]
+}

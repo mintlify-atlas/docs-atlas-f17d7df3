@@ -1,0 +1,415 @@
+---
+title: Tech stack
+description: Complete overview of technologies used in Pointer
+---
+
+# Tech stack
+
+Pointer is built with modern, production-ready technologies chosen for performance, developer experience, and scalability.
+
+## Frontend
+
+### Core framework
+
+<CardGroup cols={2}>
+  <Card title="Next.js 16" icon="N" href="https://nextjs.org">
+    React framework with App Router, SSR, and excellent DX
+  </Card>
+  <Card title="React 19" icon="react" href="https://react.dev">
+    UI library with latest features and concurrent rendering
+  </Card>
+  <Card title="TypeScript 5.9" icon="T" href="https://typescriptlang.org">
+    Type-safe development with excellent editor support
+  </Card>
+  <Card title="Tailwind CSS 4" icon="palette" href="https://tailwindcss.com">
+    Utility-first CSS framework for rapid UI development
+  </Card>
+</CardGroup>
+
+### UI libraries
+
+```json
+{
+  "@radix-ui/react-*": "^1.x - ^2.x",
+  "lucide-react": "^0.546.0",
+  "framer-motion": "^12.23.25",
+  "class-variance-authority": "^0.7.1",
+  "tailwind-merge": "^3.4.0",
+  "clsx": "^2.1.1"
+}
+```
+
+<Accordion title="Radix UI components">
+  Pointer uses 20+ Radix UI primitives:
+  - Dialog, Dropdown Menu, Popover
+  - Tooltip, Accordion, Tabs
+  - Select, Radio Group, Checkbox
+  - And many more...
+</Accordion>
+
+### Rich text editor
+
+```json
+{
+  "@tiptap/core": "^3.12.0",
+  "@tiptap/react": "^3.12.1",
+  "@tiptap/starter-kit": "^3.12.0",
+  "@tiptap/extension-*": "^3.12.0"
+}
+```
+
+**TipTap extensions used:**
+- Collaboration & CollaborationCursor
+- CodeBlockLowlight (syntax highlighting)
+- Table, Image, Link
+- Color, Highlight, Typography
+- TextAlign, Underline, Subscript, Superscript
+- Emoji, Placeholder, Suggestion
+
+<Tip>
+  TipTap is modular—you only include the extensions you need.
+</Tip>
+
+## Backend
+
+### Primary backend
+
+<Card title="Convex" icon="database" href="https://convex.dev">
+  Serverless backend platform with real-time database, functions, and file storage
+</Card>
+
+```json
+{
+  "convex": "^1.30.0",
+  "@convex-dev/auth": "^0.0.88",
+  "convex-test": "^0.0.41"
+}
+```
+
+**Features:**
+- **Queries**: Real-time subscriptions to data
+- **Mutations**: Transactional writes
+- **Actions**: Arbitrary async code
+- **Scheduled functions**: Cron jobs
+- **File storage**: Binary file uploads
+- **Authentication**: Built-in auth support
+
+### Authentication
+
+```json
+{
+  "@clerk/nextjs": "^6.35.5",
+  "@clerk/clerk-sdk-node": "^5.1.6",
+  "@auth/core": "0.37.0"
+}
+```
+
+<Accordion title="Clerk features">
+  - Social sign-in (Google, GitHub, etc.)
+  - Email/password authentication
+  - Magic links
+  - Multi-factor authentication
+  - User management
+  - Session handling
+</Accordion>
+
+## Real-time collaboration
+
+### CRDT and sync
+
+```json
+{
+  "yjs": "^13.6.27",
+  "@hocuspocus/provider": "^3.4.0",
+  "@tiptap/y-tiptap": "^3.0.1",
+  "y-prosemirror": "^1.3.7",
+  "y-websocket": "^3.0.0",
+  "y-partykit": "^0.0.33",
+  "partykit": "^0.0.115"
+}
+```
+
+**Yjs**: Conflict-free replicated data type (CRDT)
+- Automatic conflict resolution
+- Offline-first
+- Peer-to-peer capable
+
+**Hocuspocus**: WebSocket server for Yjs
+- Connection management
+- Persistence layer
+- Authentication
+
+**PartyKit**: Edge-based real-time infrastructure
+- Low-latency connections
+- Scalable WebSocket handling
+
+## Visualization
+
+### Graph view
+
+```json
+{
+  "reactflow": "^11.11.4"
+}
+```
+
+ReactFlow provides:
+- Force-directed layouts
+- Interactive nodes and edges
+- Zoom and pan
+- Custom node types
+
+### Whiteboards
+
+```json
+{
+  "@excalidraw/excalidraw": "^0.18.0"
+}
+```
+
+Excalidraw features:
+- Hand-drawn style
+- Shapes, arrows, text
+- Collaborative editing
+- Export to PNG/SVG/JSON
+
+### Charts
+
+```json
+{
+  "recharts": "2.15.4"
+}
+```
+
+## AI integration
+
+```json
+{
+  "ai": "^4.3.19",
+  "@ai-sdk/groq": "^1.2.9"
+}
+```
+
+<Tabs>
+  <Tab title="Vercel AI SDK">
+    - Streaming responses
+    - Type-safe APIs
+    - Provider-agnostic
+    - React hooks
+  </Tab>
+  <Tab title="Groq">
+    - Fast inference
+    - LLM integration
+    - Voice transcription (desktop)
+    - Content generation
+  </Tab>
+</Tabs>
+
+## State management
+
+```json
+{
+  "zustand": "^5.0.9",
+  "swr": "^2.3.7"
+}
+```
+
+**Zustand**: Lightweight state management
+- Simple API
+- TypeScript support
+- Persistence middleware
+- Devtools integration
+
+**SWR**: Data fetching and caching
+- Stale-while-revalidate strategy
+- Automatic revalidation
+- TypeScript support
+
+## Forms and validation
+
+```json
+{
+  "react-hook-form": "^7.67.0",
+  "@hookform/resolvers": "^5.2.2",
+  "zod": "^4.1.13"
+}
+```
+
+<Steps>
+  <Step title="Define schema">
+    ```typescript
+    const schema = z.object({
+      name: z.string().min(1),
+      email: z.string().email(),
+    });
+    ```
+  </Step>
+  <Step title="Create form">
+    ```typescript
+    const form = useForm({
+      resolver: zodResolver(schema),
+    });
+    ```
+  </Step>
+  <Step title="Handle submission">
+    Type-safe form data with validation
+  </Step>
+</Steps>
+
+## Desktop app
+
+```json
+{
+  "@tauri-apps/cli": "^2.9.5"
+}
+```
+
+```toml
+[dependencies]
+tauri = { version = "2", features = [] }
+groq-api-rust = "0.2.51"
+hound = "3.5.1"
+tokio = "1.29.1"
+anyhow = "1.0.98"
+mongodb = "3.2.3"
+```
+
+**Rust plugins:**
+- tauri-plugin-shell
+- tauri-plugin-clipboard-manager
+- tauri-plugin-fs
+- tauri-plugin-notification
+- tauri-plugin-global-shortcut
+- tauri-plugin-http
+
+## Testing
+
+```json
+{
+  "vitest": "^4.0.15",
+  "@vitest/ui": "^4.0.15",
+  "@vitest/coverage-v8": "^4.0.15",
+  "@testing-library/react": "^16.3.0",
+  "@testing-library/jest-dom": "^6.9.1",
+  "jsdom": "^27.2.0"
+}
+```
+
+<Accordion title="Test configurations">
+  Pointer has multiple Vitest configs:
+  - `vitest.config.ts`: Frontend tests
+  - `vitest.convex.config.ts`: Backend tests
+  - Separate coverage settings
+</Accordion>
+
+## Utilities
+
+### Date handling
+
+```json
+{
+  "date-fns": "^4.1.0",
+  "react-day-picker": "^9.11.3"
+}
+```
+
+### UI utilities
+
+```json
+{
+  "cmdk": "^1.1.1",           // Command palette
+  "sonner": "^2.0.7",          // Toast notifications
+  "vaul": "^1.1.2",            // Drawers
+  "input-otp": "^1.4.2",       // OTP inputs
+  "embla-carousel-react": "^8.6.0"  // Carousels
+}
+```
+
+### Floating UI
+
+```json
+{
+  "@floating-ui/react": "^0.27.16",
+  "@floating-ui/dom": "^1.6.0"
+}
+```
+
+For tooltips, popovers, and dropdowns.
+
+## Analytics
+
+```json
+{
+  "posthog-js": "^1.299.0"
+}
+```
+
+PostHog provides:
+- Product analytics
+- Feature flags
+- Session recordings
+- A/B testing
+
+## Development tools
+
+### Build tools
+
+```json
+{
+  "typescript": "^5.9.3",
+  "eslint": "^9.39.1",
+  "eslint-config-next": "15.2.2",
+  "sass": "^1.94.2"
+}
+```
+
+### Babel
+
+```json
+{
+  "@babel/core": "^7.28.5",
+  "@babel/preset-env": "^7.28.5",
+  "@babel/preset-react": "^7.28.5",
+  "@babel/preset-typescript": "^7.28.5"
+}
+```
+
+<Note>
+  Babel is used for testing with Vitest, not for production builds (Next.js handles that).
+</Note>
+
+## Package manager
+
+Pointer uses npm but supports:
+- npm
+- yarn
+- pnpm
+- bun
+
+```json
+{
+  "scripts": {
+    "dev": "next dev --turbopack",
+    "build": "next build",
+    "start": "next start",
+    "test": "vitest"
+  }
+}
+```
+
+## Version summary
+
+| Category | Technology | Version |
+|----------|------------|----------|
+| Framework | Next.js | 16.1.1 |
+| UI | React | 19.2.1 |
+| Language | TypeScript | 5.9.3 |
+| Styling | Tailwind | 4.1.17 |
+| Backend | Convex | 1.30.0 |
+| Editor | TipTap | 3.12.0 |
+| Desktop | Tauri | 2.9.5 |
+| Testing | Vitest | 4.0.15 |
+
+<Tip>
+  All dependencies are kept up-to-date with the latest stable versions for security and performance.
+</Tip>

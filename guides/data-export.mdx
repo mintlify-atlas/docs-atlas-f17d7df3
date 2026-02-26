@@ -1,0 +1,281 @@
+---
+title: Data export
+description: Export your notes and data from Pointer
+---
+
+# Data export
+
+Pointer allows you to export your notes and data in various formats, ensuring you always have access to your content.
+
+## Export formats
+
+Pointer stores notes in multiple formats for flexibility:
+
+### Plain text
+
+All notes include a plain text version:
+
+```typescript
+// From convex/schema.ts
+content: v.optional(
+  v.object({
+    text: v.string(),
+    tiptap: v.optional(v.string()),
+  }),
+)
+```
+
+The `text` field contains a plain text representation of your note.
+
+### TipTap JSON
+
+Notes also store the full TipTap document structure:
+
+```json
+{
+  "type": "doc",
+  "content": [
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "text": "Hello world"
+        }
+      ]
+    }
+  ]
+}
+```
+
+This format preserves:
+- Formatting (bold, italic, etc.)
+- Block structure (headings, lists, etc.)
+- Tables and complex layouts
+- Links and images
+
+<Tip>
+  TipTap JSON can be imported into any TipTap-based editor without loss of formatting.
+</Tip>
+
+## Exporting notes
+
+Pointer provides several ways to export your data:
+
+### Single note export
+
+<Steps>
+  <Step title="Open the note">
+    Navigate to the note you want to export
+  </Step>
+  <Step title="Access export menu">
+    Click the menu icon or right-click
+  </Step>
+  <Step title="Choose format">
+    Select your preferred export format
+  </Step>
+  <Step title="Save file">
+    Download the exported file
+  </Step>
+</Steps>
+
+### Bulk export
+
+Export multiple notes at once:
+
+1. Select notes in the sidebar
+2. Choose "Export selected"
+3. Select format (JSON, plain text, or ZIP)
+4. Download the archive
+
+## Data structure
+
+When exporting from Convex, notes include:
+
+```typescript
+type Note = {
+  _id: string;
+  name: string;
+  content: {
+    text: string;
+    tiptap?: string;
+  };
+  createdAt: string;
+  lastEdited: string;
+  lastAccessed: string;
+  updatedAt: string;
+  pointer_id: string;
+  tenantId: string;
+  collaborative: boolean;
+  type?: "file" | "folder";
+  parent_id?: string;
+};
+```
+
+<Note>
+  The `tenantId` field is included for reference but should not be shared publicly.
+</Note>
+
+## Whiteboard export
+
+Whiteboards use Excalidraw's export format:
+
+```typescript
+// From convex/schema.ts
+whiteboards: defineTable({
+  title: v.string(),
+  tenantId: v.string(),
+  serializedData: v.optional(v.string()),
+  lastModified: v.string(),
+})
+```
+
+The `serializedData` field contains:
+- Elements (shapes, text, arrows)
+- Styling information
+- Layer ordering
+- Canvas state
+
+<Tabs>
+  <Tab title="JSON format">
+    Export as Excalidraw JSON for maximum compatibility
+  </Tab>
+  <Tab title="PNG format">
+    Export as image for sharing
+  </Tab>
+  <Tab title="SVG format">
+    Export as vector graphics for editing
+  </Tab>
+</Tabs>
+
+## Task export
+
+Export your tasks with all metadata:
+
+```typescript
+// From convex/schema.ts
+userTasks: defineTable({
+  tenantId: v.string(),
+  taskName: v.string(),
+  taskDescription: v.optional(v.string()),
+  category: v.optional(v.string()),
+  tags: v.optional(v.array(v.string())),
+  completed: v.boolean(),
+  createdAt: v.string(),
+  dueBy: v.optional(v.string()),
+})
+```
+
+Exported task data includes:
+- Task name and description
+- Completion status
+- Due dates
+- Categories and tags
+- Creation timestamps
+
+## Image handling
+
+Pointer tracks image references:
+
+```typescript
+// From convex/schema.ts
+imageReferences: defineTable({
+  storageId: v.string(),
+  tenantId: v.string(),
+  format: v.union(v.literal("image")),
+  documentOwnerType: v.union(v.literal("notes"), v.literal("whiteboards")),
+  documentOwner: v.union(v.id("notes"), v.id("whiteboards")),
+  createdAt: v.string(),
+})
+```
+
+<Warning>
+  When exporting notes with images, make sure to download the images separately or use a complete export that includes image files.
+</Warning>
+
+## Backup strategy
+
+Pointer tracks backup status:
+
+```typescript
+last_backed_up_at: v.optional(v.number()) // only for notes
+```
+
+Best practices for backups:
+
+<Steps>
+  <Step title="Regular exports">
+    Export your notes weekly or monthly
+  </Step>
+  <Step title="Multiple formats">
+    Keep both plain text and TipTap JSON versions
+  </Step>
+  <Step title="External storage">
+    Store backups in cloud storage or external drives
+  </Step>
+  <Step title="Verify exports">
+    Periodically test that exports can be imported
+  </Step>
+</Steps>
+
+## Version history export
+
+Pointer maintains version history:
+
+```typescript
+notesHistoryMetadata: defineTable({
+  noteId: v.id("notes"),
+  tenantId: v.string(),
+  timestamp: v.number(),
+})
+
+notesHistoryContent: defineTable({
+  metadataId: v.id("notesHistoryMetadata"),
+  content: v.object({
+    text: v.string(),
+    tiptap: v.optional(v.string()),
+  }),
+  tenantId: v.string(),
+})
+```
+
+Export version history to:
+- Review changes over time
+- Restore previous versions
+- Track document evolution
+
+<Tip>
+  Version history is indexed by creation time, making it easy to find versions from specific dates.
+</Tip>
+
+## API access
+
+For programmatic export, Pointer provides Convex functions:
+
+```typescript
+// Get all notes for a tenant
+const notes = await ctx.db
+  .query("notes")
+  .withIndex("by_tenant", (q) => q.eq("tenantId", tenantId))
+  .collect();
+
+// Get note content
+const content = await ctx.db
+  .query("notesContent")
+  .withIndex("by_noteid", (q) => q.eq("noteId", noteId))
+  .first();
+```
+
+See the [tech stack documentation](/development/tech-stack) for more on Convex APIs.
+
+## Import from export
+
+Pointer exports can be imported:
+
+1. Create a new note
+2. Paste TipTap JSON or plain text
+3. Formatting is preserved (for TipTap JSON)
+
+<Note>
+  When importing between Pointer instances, preserve the folder structure by importing the complete hierarchy.
+</Note>

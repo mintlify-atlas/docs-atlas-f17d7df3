@@ -1,0 +1,398 @@
+---
+title: Contributing
+description: Learn how to contribute to Pointer development
+---
+
+# Contributing
+
+We welcome contributions to Pointer! This guide will help you get started with development and understand our contribution process.
+
+## Getting started
+
+### Prerequisites
+
+Before contributing, ensure you have:
+
+- **Node.js**: Version 20 or later
+- **Git**: For version control
+- **Code editor**: VS Code recommended
+- **Convex account**: For backend development
+- **Clerk account**: For authentication testing
+
+<Tip>
+  Familiarize yourself with Next.js, React, and TypeScript before contributing.
+</Tip>
+
+### Development setup
+
+<Steps>
+  <Step title="Fork and clone">
+    ```bash
+    git clone https://github.com/YOUR_USERNAME/pointer.git
+    cd pointer
+    ```
+  </Step>
+  
+  <Step title="Install dependencies">
+    ```bash
+    npm install
+    ```
+  </Step>
+  
+  <Step title="Set up environment">
+    Copy `.env.example` to `.env.local` and configure:
+    
+    ```bash
+    cp .env.example .env.local
+    ```
+    
+    Fill in your Convex and Clerk credentials
+  </Step>
+  
+  <Step title="Start Convex">
+    ```bash
+    npx convex dev
+    ```
+  </Step>
+  
+  <Step title="Run development server">
+    ```bash
+    npm run dev
+    ```
+  </Step>
+  
+  <Step title="Open in browser">
+    Navigate to [http://localhost:3000](http://localhost:3000)
+  </Step>
+</Steps>
+
+## Project structure
+
+```
+pointer/
+├── src/
+│   ├── app/              # Next.js app router
+│   ├── components/       # React components
+│   ├── hooks/            # Custom React hooks
+│   ├── lib/              # Utilities and stores
+│   ├── providers/        # Context providers
+│   └── types/            # TypeScript types
+├── convex/             # Backend functions
+├── src-tauri/          # Desktop app (Rust)
+├── __tests__/          # Test files
+└── public/             # Static assets
+```
+
+<Accordion title="Component organization">
+  Components are organized by feature:
+  
+  - `components/views/`: Main view components
+  - `components/tiptap/`: Editor-related components
+  - `components/ui/`: Reusable UI primitives
+  - `components/navigation/`: Navigation components
+  - `components/sidebar/`: Sidebar components
+</Accordion>
+
+## Code style
+
+### TypeScript
+
+Pointer uses TypeScript for type safety:
+
+```typescript
+// Good: Explicit types
+interface Note {
+  id: string;
+  name: string;
+  content: NoteContent;
+}
+
+function createNote(note: Note): Promise<void> {
+  // Implementation
+}
+
+// Avoid: Implicit any
+function processData(data) { // ✗ Missing type
+  // Implementation
+}
+```
+
+### React patterns
+
+Follow modern React best practices:
+
+```typescript
+// Good: Functional components with hooks
+export function MyComponent({ prop }: Props) {
+  const [state, setState] = useState(initialState);
+  
+  useEffect(() => {
+    // Side effects
+  }, [dependencies]);
+  
+  return <div>{/* JSX */}</div>;
+}
+
+// Good: Memoization when needed
+export const MemoizedComponent = React.memo(
+  MyComponent,
+  (prev, next) => prev.id === next.id
+);
+```
+
+### Naming conventions
+
+- **Components**: PascalCase (`MyComponent.tsx`)
+- **Hooks**: camelCase with `use` prefix (`useMyHook.ts`)
+- **Utilities**: camelCase (`myUtility.ts`)
+- **Constants**: UPPER_SNAKE_CASE (`MY_CONSTANT`)
+
+<Note>
+  Follow the existing patterns in the codebase for consistency.
+</Note>
+
+## Linting and formatting
+
+### ESLint
+
+Run the linter:
+
+```bash
+npm run lint
+```
+
+Configuration in `.eslintrc.js` and `eslint.config.mjs`:
+
+```javascript
+module.exports = {
+  extends: ['next/core-web-vitals'],
+  rules: {
+    // Custom rules
+  },
+};
+```
+
+### Fix lint errors
+
+```bash
+npm run lint -- --fix
+```
+
+<Tip>
+  Set up your editor to auto-fix on save for the best experience.
+</Tip>
+
+## Testing
+
+Pointer uses Vitest for testing. See the [testing guide](/development/testing) for details.
+
+### Run tests
+
+```bash
+# Run all tests
+npm test
+
+# Run frontend tests only
+npm run test:once
+
+# Run backend tests only
+npm run test:convex
+
+# Run both suites
+npm run test:all
+```
+
+## Making changes
+
+### Creating a branch
+
+```bash
+git checkout -b feature/my-feature
+# or
+git checkout -b fix/my-bugfix
+```
+
+Branch naming:
+- `feature/` - New features
+- `fix/` - Bug fixes
+- `docs/` - Documentation
+- `refactor/` - Code refactoring
+- `test/` - Test improvements
+
+### Commit messages
+
+Write clear, descriptive commit messages:
+
+```bash
+# Good
+git commit -m "Add task due date filtering in HomeView"
+git commit -m "Fix whiteboard auto-save race condition"
+
+# Avoid
+git commit -m "Update stuff"
+git commit -m "Fix bug"
+```
+
+<Accordion title="Commit message format">
+  ```
+  <type>: <subject>
+  
+  [optional body]
+  
+  [optional footer]
+  ```
+  
+  Types:
+  - feat: New feature
+  - fix: Bug fix
+  - docs: Documentation
+  - style: Formatting
+  - refactor: Code restructuring
+  - test: Tests
+  - chore: Maintenance
+</Accordion>
+
+## Submitting changes
+
+### Pull request process
+
+<Steps>
+  <Step title="Test your changes">
+    ```bash
+    npm run test:all
+    npm run build
+    ```
+  </Step>
+  
+  <Step title="Push to GitHub">
+    ```bash
+    git push origin feature/my-feature
+    ```
+  </Step>
+  
+  <Step title="Create pull request">
+    Go to GitHub and create a PR from your branch
+  </Step>
+  
+  <Step title="Describe changes">
+    Provide a clear description of what changed and why
+  </Step>
+  
+  <Step title="Wait for review">
+    Maintainers will review your PR and may request changes
+  </Step>
+</Steps>
+
+### PR description template
+
+```markdown
+## Description
+Brief description of changes
+
+## Changes
+- Added X feature
+- Fixed Y bug
+- Updated Z component
+
+## Testing
+- [ ] Tested locally
+- [ ] Added/updated tests
+- [ ] Documentation updated
+
+## Screenshots
+(If applicable)
+```
+
+## Development workflow
+
+### Hot reload
+
+Next.js with Turbopack provides fast hot module reload:
+
+```bash
+npm run dev  # Uses --turbopack flag
+```
+
+Changes appear instantly without full page reload.
+
+### Debugging
+
+#### Frontend debugging
+
+Use browser DevTools:
+- React DevTools for component inspection
+- Network tab for API calls
+- Console for errors and logs
+
+#### Backend debugging
+
+Convex dashboard provides:
+- Function logs
+- Query performance
+- Database inspector
+
+#### Vitest debugging
+
+```bash
+npm run test:debug
+```
+
+Attach your debugger to the Node process.
+
+<Tip>
+  Add `debugger;` statements in your code and use VS Code's debugger.
+</Tip>
+
+## Areas to contribute
+
+<CardGroup cols={2}>
+  <Card title="Bug fixes" icon="bug">
+    Check GitHub issues for bugs to fix
+  </Card>
+  <Card title="Features" icon="sparkles">
+    Implement requested features
+  </Card>
+  <Card title="Documentation" icon="book">
+    Improve or add documentation
+  </Card>
+  <Card title="Tests" icon="flask">
+    Increase test coverage
+  </Card>
+  <Card title="Performance" icon="gauge">
+    Optimize slow operations
+  </Card>
+  <Card title="Accessibility" icon="universal-access">
+    Improve a11y support
+  </Card>
+</CardGroup>
+
+## Code review
+
+When reviewing code:
+
+- Be constructive and respectful
+- Test the changes locally
+- Check for edge cases
+- Verify tests pass
+- Ensure documentation is updated
+
+## Getting help
+
+If you need help:
+
+1. **Read the docs**: Check this documentation first
+2. **Search issues**: Someone may have had the same question
+3. **Ask in discussions**: Use GitHub Discussions
+4. **Open an issue**: For bugs or feature requests
+
+<Note>
+  Be patient and respectful. Maintainers are often volunteers.
+</Note>
+
+## License
+
+By contributing, you agree that your contributions will be licensed under the same license as Pointer.
+
+## Thank you!
+
+We appreciate all contributions, no matter how small. Thank you for helping make Pointer better! 🚀

@@ -1,0 +1,191 @@
+---
+title: Notes
+description: Create and edit rich text notes with powerful formatting options
+icon: file-text
+---
+
+Pointer's note editor provides a powerful writing environment with support for rich text formatting, images, tables, code blocks, and more. Notes can be used in either single-user or collaborative mode.
+
+## Creating a note
+
+Notes are automatically created when you start writing. Each note includes:
+
+- **Content**: Rich text with support for multiple content types
+- **Metadata**: Creation date, last edited time, and last accessed time
+- **Organization**: Optional folder structure with parent/child relationships
+- **Collaboration**: Toggle between single-user and collaborative editing
+
+## Editor features
+
+The Tiptap-powered editor includes a comprehensive toolbar with formatting options:
+
+### Text formatting
+
+<Tabs>
+  <Tab title="Basic formatting">
+    - **Bold** (Ctrl/Cmd + B)
+    - *Italic* (Ctrl/Cmd + I)
+    - <u>Underline</u> (Ctrl/Cmd + U)
+    - ~~Strikethrough~~
+    - `Inline code`
+  </Tab>
+  <Tab title="Advanced formatting">
+    - Text color and highlighting
+    - Subscript and superscript
+    - Text alignment (left, center, right, justify)
+    - Undo/redo support
+  </Tab>
+</Tabs>
+
+### Block types
+
+The editor supports various block types accessible via the slash command:
+
+<Steps>
+  <Step title="Type '/' to open the slash command menu">
+    The slash command popup appears automatically when you type a forward slash in the editor.
+  </Step>
+  <Step title="Select a block type">
+    Navigate through available blocks using arrow keys or search by typing.
+  </Step>
+  <Step title="Press Enter to insert">
+    The selected block will be inserted at your cursor position.
+  </Step>
+</Steps>
+
+### Available block types
+
+<AccordionGroup>
+  <Accordion title="Headings">
+    Four heading levels (H1-H4) are available through the heading dropdown menu in the toolbar.
+    
+    ```markdown
+    # Heading 1
+    ## Heading 2
+    ### Heading 3
+    #### Heading 4
+    ```
+  </Accordion>
+
+  <Accordion title="Lists">
+    Three list types are supported:
+    - **Bullet list**: Unordered list items
+    - **Ordered list**: Numbered list items
+    - **Task list**: Checkable todo items
+  </Accordion>
+
+  <Accordion title="Block quote">
+    Add quotes or callouts using the block quote button in the toolbar.
+    
+    > Block quotes are perfect for highlighting important information or adding citations.
+  </Accordion>
+
+  <Accordion title="Code block">
+    Insert syntax-highlighted code blocks with language selection support.
+    
+    ```javascript
+    const greeting = "Hello, World!";
+    console.log(greeting);
+    ```
+  </Accordion>
+
+  <Accordion title="Tables">
+    Create and edit tables with the table context menu:
+    - Insert/delete rows and columns
+    - Merge and split cells
+    - Full keyboard navigation
+  </Accordion>
+
+  <Accordion title="Images">
+    Upload images directly into your notes using the image upload button. Images are stored in Convex storage and referenced in the document.
+  </Accordion>
+</AccordionGroup>
+
+## Floating toolbar
+
+The toolbar follows your cursor position for easy access to formatting options:
+
+- **Desktop**: Sticky toolbar positioned near the top of the editor
+- **Mobile**: Context-aware toolbar that adapts to your editing position
+- **Adaptive**: Switches to simplified mobile view on smaller screens
+
+<Note>
+  The toolbar automatically adjusts its position to remain visible as you scroll through long documents.
+</Note>
+
+## Auto-save
+
+Notes are automatically saved as you type:
+
+- Changes are persisted to the database in real-time
+- Last saved timestamp is displayed in the footer
+- No manual save action required
+
+<Tip>
+  You can see the last saved time at the bottom of the editor screen. The timestamp updates automatically after each save.
+</Tip>
+
+## Note types
+
+Notes can be organized with a folder structure:
+
+- **File**: Regular note with content (`type: "file"`)
+- **Folder**: Container for organizing other notes (`type: "folder"`)
+- **Parent/Child**: Notes can have a `parent_id` to create hierarchies
+
+## Content storage
+
+Note content is stored in two formats:
+
+<Tabs>
+  <Tab title="Plain text">
+    The `text` field contains a plain text representation of the note content, useful for search and indexing.
+  </Tab>
+  <Tab title="Tiptap JSON">
+    The `tiptap` field stores the structured editor content as JSON, preserving all formatting, blocks, and attributes.
+  </Tab>
+</Tabs>
+
+## Keyboard shortcuts
+
+<Note>
+  All standard text editing shortcuts are supported:
+</Note>
+
+| Shortcut | Action |
+|----------|--------|
+| Cmd/Ctrl + B | Bold |
+| Cmd/Ctrl + I | Italic |
+| Cmd/Ctrl + U | Underline |
+| Cmd/Ctrl + Z | Undo |
+| Cmd/Ctrl + Shift + Z | Redo |
+| / | Open slash command |
+| Esc | Close slash command |
+
+## Schema reference
+
+Notes are stored in the `notes` table with the following structure:
+
+```typescript
+notes: {
+  content: {
+    text: string,
+    tiptap: string  // Optional JSON string
+  },
+  name: string,
+  pointer_id: string,
+  tenantId: string,
+  type: "file" | "folder",
+  parent_id?: Id<"notes">,
+  collaborative: boolean,
+  createdAt: string,
+  updatedAt: string,
+  lastAccessed: string,
+  lastEdited: string,
+  last_backed_up_at?: number
+}
+```
+
+<Tip>
+  Large note content is stored separately in the `notesContent` table for better performance and to avoid size limitations.
+</Tip>

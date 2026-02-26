@@ -1,0 +1,426 @@
+---
+title: Tasks
+description: Organize your work with a simple, elegant task manager
+icon: check-square
+---
+
+Pointer includes a built-in task manager that helps you stay organized. Tasks are displayed in the home view and automatically organized by due date.
+
+## Creating tasks
+
+Add new tasks with a simple inline form:
+
+<Steps>
+  <Step title="Type in the task input">
+    Enter your task name in the "+ Add task" field at the top of the home view.
+  </Step>
+  <Step title="Press Enter">
+    The task is created immediately with default values.
+  </Step>
+  <Step title="Add details (optional)">
+    Click the task to open the edit dialog and add description, tags, and due date.
+  </Step>
+</Steps>
+
+## Task properties
+
+Each task includes several properties:
+
+```typescript
+userTasks: {
+  tenantId: string,
+  taskName: string,
+  taskDescription?: string,
+  category?: string,
+  tags?: string[],
+  completed: boolean,
+  createdAt: string,
+  dueBy?: string
+}
+```
+
+<Tabs>
+  <Tab title="Required fields">
+    - **taskName**: The main task text
+    - **tenantId**: User identifier
+    - **completed**: Whether the task is done
+    - **createdAt**: When the task was created
+  </Tab>
+  <Tab title="Optional fields">
+    - **taskDescription**: Extended notes about the task
+    - **category**: Group related tasks
+    - **tags**: Multiple labels for filtering
+    - **dueBy**: ISO date string for the deadline
+  </Tab>
+</Tabs>
+
+## Task organization
+
+Tasks are automatically organized into three sections:
+
+<CardGroup cols={3}>
+  <Card title="Today" icon="calendar-day">
+    Tasks due today (based on `dueBy` date)
+  </Card>
+  <Card title="This week" icon="calendar-week">
+    Tasks due within the next 7 days
+  </Card>
+  <Card title="General" icon="list">
+    All other tasks or tasks without due dates
+  </Card>
+</CardGroup>
+
+### Sorting logic
+
+```typescript
+const sortedTasks = [...userTasks].sort((a, b) => {
+  // Incomplete tasks first
+  if (a.completed !== b.completed) {
+    return a.completed ? 1 : -1;
+  }
+  // Then by creation date (newest first)
+  return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+});
+```
+
+<Note>
+  Incomplete tasks always appear before completed ones within each section. Within completion status, newer tasks appear first.
+</Note>
+
+## Completing tasks
+
+Mark tasks as complete by clicking the checkbox:
+
+```tsx
+<input
+  type="checkbox"
+  checked={task.completed}
+  onChange={(e) => onToggleComplete(task._id.toString(), e.target.checked)}
+  className="h-5 w-5 rounded-full border-border text-foreground"
+/>
+```
+
+Completed tasks:
+- Display with strikethrough text
+- Move to the bottom of their section
+- Remain visible for reference
+
+<Tip>
+  You can also click directly on the task text to toggle its completion status.
+</Tip>
+
+## Editing tasks
+
+Open the edit dialog to modify task details:
+
+<Steps>
+  <Step title="Click the edit button">
+    Hover over a task to reveal the edit button (pencil icon).
+  </Step>
+  <Step title="Update fields">
+    Modify the task name, description, tags, or due date in the dialog.
+  </Step>
+  <Step title="Save changes">
+    Click "Save Changes" to update the task.
+  </Step>
+</Steps>
+
+### Edit dialog fields
+
+<AccordionGroup>
+  <Accordion title="Task name">
+    The main text displayed in the task list. This field is required.
+    
+    ```tsx
+    <Input
+      id="taskName"
+      value={editForm.taskName}
+      onChange={(e) => setEditForm(prev => ({
+        ...prev,
+        taskName: e.target.value
+      }))}
+      placeholder="Enter task name"
+    />
+    ```
+  </Accordion>
+
+  <Accordion title="Description">
+    Optional multi-line text for additional context. Displayed in the task tooltip.
+    
+    ```tsx
+    <Textarea
+      id="taskDescription"
+      value={editForm.taskDescription}
+      onChange={(e) => setEditForm(prev => ({
+        ...prev,
+        taskDescription: e.target.value
+      }))}
+      placeholder="Add a description..."
+      rows={3}
+    />
+    ```
+  </Accordion>
+
+  <Accordion title="Tags">
+    Comma-separated labels for categorization:
+    
+    ```tsx
+    <Input
+      id="tags"
+      value={tagsInput}
+      onChange={(e) => {
+        const inputValue = e.target.value;
+        setTagsInput(inputValue);
+        const tags = inputValue
+          .split(",")
+          .map((tag) => tag.trim())
+          .filter((tag) => tag.length > 0);
+        setEditForm(prev => ({ ...prev, tags }));
+      }}
+      placeholder="urgent, work, personal (comma separated)"
+    />
+    ```
+  </Accordion>
+
+  <Accordion title="Due date">
+    Optional deadline set with a calendar picker:
+    
+    ```tsx
+    <Popover open={dueDatePickerOpen} onOpenChange={setDueDatePickerOpen}>
+      <PopoverTrigger asChild>
+        <Button variant="outline">
+          <CalendarIcon className="mr-2 h-4 w-4" />
+          {editForm.dueBy
+            ? format(new Date(editForm.dueBy), "PPP")
+            : "Pick a date"}
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent>
+        <Calendar
+          mode="single"
+          selected={editForm.dueBy ? new Date(editForm.dueBy) : undefined}
+          onSelect={handleDateSelect}
+        />
+      </PopoverContent>
+    </Popover>
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Task tooltips
+
+Hover over any task to see a detailed tooltip:
+
+```tsx
+<Tooltip delayDuration={300}>
+  <TooltipTrigger asChild>
+    {/* Task item */}
+  </TooltipTrigger>
+  <TooltipContent side="bottom" align="start" className="max-w-md p-6">
+    <div className="space-y-4">
+      <div>
+        <h4 className="font-semibold text-base">{task.taskName}</h4>
+        {task.completed && (
+          <span className="inline-flex items-center px-2 py-1 rounded-full 
+                         text-xs font-medium bg-green-100 text-green-800">
+            Completed
+          </span>
+        )}
+      </div>
+      
+      {task.taskDescription && (
+        <div>
+          <p className="text-sm font-medium text-muted-foreground">Description</p>
+          <p className="text-sm">{task.taskDescription}</p>
+        </div>
+      )}
+      
+      {/* Tags and timestamps */}
+    </div>
+  </TooltipContent>
+</Tooltip>
+```
+
+Tooltips show:
+- Task name and completion status
+- Description (if provided)
+- Tags with styled badges
+- Creation date and time
+- Due date with overdue warnings
+
+## Due date indicators
+
+Tasks with due dates show contextual indicators:
+
+<Tabs>
+  <Tab title="Overdue">
+    ```tsx
+    {isPast(new Date(task.dueBy)) && !isToday(new Date(task.dueBy)) && (
+      <span className="ml-2 text-destructive font-medium">
+        Overdue
+      </span>
+    )}
+    ```
+    
+    Displayed in red with "Overdue" label.
+  </Tab>
+  <Tab title="Due today">
+    ```tsx
+    {isToday(new Date(task.dueBy)) && (
+      <span className="ml-2 text-accent-foreground font-medium">
+        Today
+      </span>
+    )}
+    ```
+    
+    Highlighted with "Today" label.
+  </Tab>
+  <Tab title="Upcoming">
+    Tasks due within 7 days appear in the "This Week" section with formatted dates.
+  </Tab>
+</Tabs>
+
+## Deleting tasks
+
+Remove tasks you no longer need:
+
+<Steps>
+  <Step title="Hover over the task">
+    The delete button (trash icon) appears on hover.
+  </Step>
+  <Step title="Click the delete button">
+    The task is immediately removed from the list.
+  </Step>
+</Steps>
+
+<Warning>
+  Deleting a task is permanent and cannot be undone. Consider marking tasks as complete instead if you want to keep a record.
+</Warning>
+
+## Empty state
+
+When you have no tasks, a helpful empty state is displayed:
+
+```tsx
+<div className="space-y-2">
+  <div className="flex items-center gap-3 p-2 rounded">
+    <input type="checkbox" disabled />
+    <span className="flex-1 text-muted-foreground">
+      Welcome to your task manager
+    </span>
+  </div>
+  <div className="flex items-center gap-3 p-2 rounded">
+    <input type="checkbox" disabled />
+    <span className="flex-1 text-muted-foreground">
+      Add a task above to get started
+    </span>
+  </div>
+  <div className="flex items-center gap-3 p-2 rounded">
+    <input type="checkbox" disabled />
+    <span className="flex-1 text-muted-foreground">
+      Click on any task to mark it complete
+    </span>
+  </div>
+</div>
+```
+
+## Task hooks
+
+The task system uses custom hooks for data management:
+
+### useTaskManager
+
+Provides task operations:
+
+```typescript
+const {
+  fetchTasks,
+  createTask,
+  toggleTaskCompletion,
+  deleteTask,
+  updateTask,
+  isCreating,
+} = useTaskManager();
+```
+
+### useTasksStore
+
+Accesses task state:
+
+```typescript
+const { userTasks, isLoading } = useTasksStore();
+```
+
+## Best practices
+
+<AccordionGroup>
+  <Accordion title="Use descriptive task names">
+    Keep task names clear and action-oriented:
+    - Good: "Review pull request #123"
+    - Bad: "PR"
+  </Accordion>
+
+  <Accordion title="Add due dates to time-sensitive tasks">
+    Tasks with deadlines should always have a `dueBy` date to ensure they appear in the appropriate section.
+  </Accordion>
+
+  <Accordion title="Use tags for filtering">
+    Although filtering isn't implemented in the UI yet, tags are stored in the database and ready for future filtering features:
+    
+    ```typescript
+    tags: ["urgent", "work", "meeting"]
+    ```
+  </Accordion>
+
+  <Accordion title="Keep descriptions concise">
+    The description field is displayed in a tooltip. Keep it brief and informative:
+    - Include relevant context
+    - Link to related resources
+    - Note dependencies
+  </Accordion>
+</AccordionGroup>
+
+## Querying tasks
+
+Tasks are indexed by tenant for efficient queries:
+
+```typescript
+// Fetch all tasks for the current user
+const tasks = await db
+  .query("userTasks")
+  .withIndex("by_tenant", (q) => q.eq("tenantId", currentTenantId))
+  .collect();
+
+// Filter completed tasks
+const completedTasks = tasks.filter(task => task.completed);
+
+// Filter by tag
+const urgentTasks = tasks.filter(task => 
+  task.tags?.includes("urgent")
+);
+```
+
+<Tip>
+  The `by_tenant` index ensures fast queries even with thousands of tasks.
+</Tip>
+
+## Date utilities
+
+The task system uses date-fns for date handling:
+
+```typescript
+import { format, isToday, isPast, addDays } from "date-fns";
+
+// Format for display
+format(new Date(task.createdAt), "MMM d, yyyy 'at' h:mm a")
+// "Dec 26, 2025 at 3:45 PM"
+
+// Check if task is due today
+isToday(new Date(task.dueBy))
+
+// Check if task is overdue
+isPast(new Date(task.dueBy)) && !isToday(new Date(task.dueBy))
+
+// Calculate week boundary
+const weekFromNow = addDays(new Date(), 7);
+```

@@ -1,0 +1,394 @@
+---
+title: Whiteboards
+description: Sketch, diagram, and brainstorm with infinite canvas whiteboards
+icon: pen-tool
+---
+
+Pointer's whiteboard feature provides an infinite canvas for visual thinking, powered by Excalidraw. Create diagrams, sketches, flowcharts, and visual notes with a full suite of drawing tools.
+
+## Overview
+
+Whiteboards are built on top of Excalidraw, offering:
+
+- **Infinite canvas**: Pan and zoom freely without boundaries
+- **Rich drawing tools**: Rectangles, circles, arrows, lines, and freehand drawing
+- **Text support**: Add labels and annotations
+- **Collaboration-ready**: Built-in support for real-time collaboration
+- **Auto-save**: Changes are automatically persisted to the database
+- **Theme sync**: Automatically matches your Pointer theme (light/dark)
+
+## Creating a whiteboard
+
+Whiteboards are stored in the `whiteboards` table:
+
+```typescript
+whiteboards: {
+  title: string,
+  tenantId: string,
+  serializedData?: string,  // Excalidraw scene data
+  lastModified: string
+}
+```
+
+<Steps>
+  <Step title="Create a whiteboard record">
+    Add a new entry to the `whiteboards` table with a title and tenant ID.
+  </Step>
+  <Step title="Load the WhiteboardView">
+    The view initializes the Excalidraw wrapper with the whiteboard data.
+  </Step>
+  <Step title="Start drawing">
+    All changes are automatically saved to the `serializedData` field.
+  </Step>
+</Steps>
+
+## Architecture
+
+The whiteboard system consists of three main layers:
+
+<Tabs>
+  <Tab title="WhiteboardView">
+    Top-level component that wraps the whiteboard in a provider:
+    
+    ```tsx
+    export default function WhiteboardView() {
+      return (
+        <WhiteboardProvider>
+          <ExcalidrawWrapper />
+        </WhiteboardProvider>
+      );
+    }
+    ```
+    
+    - Dynamically imported to prevent SSR issues
+    - Minimal wrapper for clean separation of concerns
+  </Tab>
+  <Tab title="WhiteboardProvider">
+    Context provider that manages:
+    - Current whiteboard state
+    - Loading states
+    - Data fetching from Convex
+    - Sharing state between components
+  </Tab>
+  <Tab title="ExcalidrawWrapper">
+    Core component that handles:
+    - Excalidraw initialization
+    - Change detection and auto-save
+    - Theme synchronization
+    - Performance optimization
+  </Tab>
+</Tabs>
+
+## Auto-save system
+
+The whiteboard implements a sophisticated auto-save system:
+
+### Change detection
+
+Changes are detected using a lightweight hash function:
+
+```typescript
+const hashElements = (elements: readonly ExcalidrawElement[]): string => {
+  return (
+    elements.length +
+    "_" +
+    elements.reduce((hash, el) => {
+      return hash + el.id + el.x + el.y + (el.width || 0) + (el.height || 0);
+    }, "")
+  );
+};
+```
+
+<Note>
+  The hash function is deliberately simple for performance. It checks element count and key properties without deep comparison.
+</Note>
+
+### Throttle and debounce
+
+The auto-save system uses two optimization techniques:
+
+<AccordionGroup>
+  <Accordion title="Throttle (100ms)">
+    UI updates are throttled to prevent excessive re-renders:
+    
+    ```typescript
+    const CHANGE_THROTTLE_MS = 100;
+    const throttledHandleChange = useThrottledCallback(
+      processChange,
+      CHANGE_THROTTLE_MS
+    );
+    ```
+    
+    This ensures changes are processed at most 10 times per second.
+  </Accordion>
+
+  <Accordion title="Debounce (2000ms)">
+    Database writes are debounced to batch rapid changes:
+    
+    ```typescript
+    const AUTO_SAVE_DEBOUNCE_MS = 2000;
+    const debouncedAutoSave = useDebounce(
+      performAutoSave,
+      AUTO_SAVE_DEBOUNCE_MS
+    );
+    ```
+    
+    Changes are only saved after 2 seconds of inactivity.
+  </Accordion>
+</AccordionGroup>
+
+### Optimistic updates
+
+The store is updated immediately for instant UI feedback:
+
+```typescript
+queueMicrotask(() => {
+  useWhiteboardStore.getState().updateSerializedData(serializedData);
+});
+
+// Schedule auto-save for later
+debouncedAutoSave(serializedData);
+```
+
+<Tip>
+  Using `queueMicrotask` ensures the store update happens in the next event loop tick, avoiding state update batching issues.
+</Tip>
+
+## Data serialization
+
+Whiteboard data is serialized for storage:
+
+### Serialization
+
+```typescript
+const whiteboardAppState = {
+  viewBackgroundColor: appState.viewBackgroundColor,
+  theme: resolvedTheme,
+  gridSize: appState.gridSize,
+  name: appState.name ?? undefined,
+};
+
+const serializedData = await serializeWhiteboardData(
+  elements,
+  whiteboardAppState
+);
+```
+
+### Deserialization
+
+When loading a whiteboard:
+
+```typescript
+let deserializedData = null;
+
+if (whiteboard.serializedData) {
+  deserializedData = await deserializeWhiteboardData(
+    whiteboard.serializedData
+  );
+  deserializedData = {
+    ...deserializedData,
+    appState: {
+      ...deserializedData?.appState,
+      currentItemFontFamily: FONT_FAMILY.Nunito,
+    },
+  };
+}
+```
+
+<Note>
+  The font family is explicitly set to Nunito to ensure consistent typography across all whiteboards.
+</Note>
+
+## Theme synchronization
+
+Whiteboards automatically sync with your global theme:
+
+```typescript
+useEffect(() => {
+  if (excalidrawApi) {
+    excalidrawApi.updateScene({
+      appState: {
+        theme: resolvedTheme,
+      },
+    });
+  }
+}, [theme, excalidrawApi, resolvedTheme]);
+```
+
+<Tabs>
+  <Tab title="Light theme">
+    White canvas with dark elements, optimized for daytime use and printing.
+  </Tab>
+  <Tab title="Dark theme">
+    Dark canvas with light elements, reducing eye strain in low-light environments.
+  </Tab>
+</Tabs>
+
+## Loading states
+
+The whiteboard shows a loading indicator during initialization:
+
+```tsx
+if (!isMounted || whiteboardLoading || !initialData) {
+  return (
+    <div className="w-full h-full flex items-center justify-center bg-gray-50">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-8 w-8 
+                      border-b-2 border-indigo-600 mx-auto mb-4"></div>
+        <p className="text-gray-600">Loading whiteboard...</p>
+      </div>
+    </div>
+  );
+}
+```
+
+## Performance optimization
+
+Several techniques ensure smooth performance:
+
+<AccordionGroup>
+  <Accordion title="Refs for state tracking">
+    Critical state is stored in refs to avoid re-renders:
+    
+    ```typescript
+    const isInitializingRef = useRef(false);
+    const hasInitializedRef = useRef(false);
+    const lastWhiteboardIdRef = useRef<string | null>(null);
+    const pendingSerializedDataRef = useRef<string | null>(null);
+    const elementsHashRef = useRef<string>("");
+    ```
+  </Accordion>
+
+  <Accordion title="Memoized component">
+    The Excalidraw component is memoized to prevent unnecessary re-renders:
+    
+    ```typescript
+    const excalidrawComponent = useMemo(() => {
+      if (!initialData) return null;
+      return <Excalidraw ... />;
+    }, [initialData, handleChange, resolvedTheme]);
+    ```
+  </Accordion>
+
+  <Accordion title="Dynamic imports">
+    Excalidraw is dynamically imported to reduce initial bundle size:
+    
+    ```typescript
+    const Excalidraw = dynamic(
+      async () => (await import("@excalidraw/excalidraw")).Excalidraw,
+      { ssr: false }
+    );
+    ```
+  </Accordion>
+
+  <Accordion title="Early returns">
+    Multiple guard clauses prevent unnecessary processing:
+    
+    ```typescript
+    if (isInitializingRef.current || !whiteboard) return;
+    
+    const newHash = hashElements(elements);
+    if (newHash === elementsHashRef.current) return;
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Excalidraw configuration
+
+The Excalidraw instance is configured with custom options:
+
+```typescript
+const UIOptions = {
+  canvasActions: {
+    loadScene: false,  // Disable scene loading UI
+  },
+  tools: { 
+    image: false  // Disable image upload (handled separately)
+  },
+};
+
+<Excalidraw
+  excalidrawAPI={(api) => setExcalidrawApi(api)}
+  onChange={handleChange}
+  initialData={initialData}
+  renderTopRightUI={() => null}  // Remove default UI
+  UIOptions={UIOptions}
+/>
+```
+
+<Warning>
+  Image uploads are disabled in the Excalidraw UI because Pointer handles image storage through its own system using Convex storage.
+</Warning>
+
+## Image references
+
+Images in whiteboards are tracked separately:
+
+```typescript
+imageReferences: {
+  storageId: string,
+  tenantId: string,
+  format: "image",
+  documentOwnerType: "whiteboards",
+  documentOwner: Id<"whiteboards">,
+  createdAt: string
+}
+```
+
+<Steps>
+  <Step title="Upload to storage">
+    Images are first uploaded to Convex file storage.
+  </Step>
+  <Step title="Create reference">
+    A reference record links the image to the whiteboard.
+  </Step>
+  <Step title="Cleanup tracking">
+    When images are removed, they're moved to `imageReferencesCleanup` for eventual deletion.
+  </Step>
+</Steps>
+
+## Best practices
+
+<Tip>
+  **Whiteboard performance tips:**
+  - Keep whiteboards focused on specific topics
+  - Avoid extremely large numbers of elements (>1000)
+  - Use simple shapes when possible instead of freehand
+  - Let auto-save complete before closing the whiteboard
+</Tip>
+
+<Note>
+  The whiteboard will show unsaved changes with the pending changes indicator in the store. Wait for this to clear before navigating away.
+</Note>
+
+## Whiteboard initialization
+
+The initialization process ensures data integrity:
+
+```typescript
+if (
+  hasInitializedRef.current &&
+  whiteboard._id === lastWhiteboardIdRef.current
+) {
+  return;  // Already initialized
+}
+
+isInitializingRef.current = true;
+
+try {
+  // Load and deserialize data
+  let deserializedData = whiteboard.serializedData
+    ? await deserializeWhiteboardData(whiteboard.serializedData)
+    : createDefaultWhiteboardState();
+  
+  setInitialData(deserializedData);
+  hasInitializedRef.current = true;
+  lastWhiteboardIdRef.current = whiteboard._id;
+} finally {
+  isInitializingRef.current = false;
+}
+```
+
+<Note>
+  The initialization flags prevent race conditions and duplicate loads when switching between whiteboards quickly.
+</Note>

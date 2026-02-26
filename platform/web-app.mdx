@@ -1,0 +1,203 @@
+---
+title: Web app
+description: Access Pointer from any modern web browser
+---
+
+# Web app
+
+Pointer's web application provides a full-featured experience accessible from any modern web browser, with no installation required.
+
+## Overview
+
+The Pointer web app is built with Next.js 16 and React 19, providing a fast, responsive, and modern user experience. It uses server-side rendering and static generation for optimal performance.
+
+## Browser support
+
+Pointer works best on modern browsers:
+
+- **Chrome/Edge**: Version 90 and later
+- **Firefox**: Version 88 and later
+- **Safari**: Version 14 and later
+
+<Warning>
+  Older browsers may experience degraded performance or missing features. We recommend using the latest version of your preferred browser.
+</Warning>
+
+## Features
+
+### Server-side rendering
+
+Pointer uses Next.js App Router with server-side rendering for:
+
+- **Fast initial load**: Pages render on the server for instant display
+- **SEO optimization**: Better search engine visibility
+- **Progressive enhancement**: Works even with JavaScript disabled (for basic content)
+
+### Real-time updates
+
+The web app uses Convex for real-time data synchronization:
+
+```typescript
+import { ConvexProvider, ConvexReactClient } from "convex/react";
+
+const convex = new ConvexReactClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
+```
+
+This ensures that changes made by you or collaborators appear instantly across all devices.
+
+### Theme support
+
+Pointer supports light and dark themes with automatic system detection:
+
+```typescript
+<ThemeProvider defaultTheme="system" storageKey="theme">
+  {/* App content */}
+</ThemeProvider>
+```
+
+<Tabs>
+  <Tab title="Light theme">
+    The light theme provides a clean, bright interface ideal for daytime use.
+  </Tab>
+  <Tab title="Dark theme">
+    The dark theme reduces eye strain in low-light environments.
+  </Tab>
+  <Tab title="System">
+    Automatically switches between light and dark based on your system preferences.
+  </Tab>
+</Tabs>
+
+## Performance optimizations
+
+### Turbopack
+
+Pointer uses Turbopack for development:
+
+```json
+{
+  "scripts": {
+    "dev": "next dev --turbopack"
+  }
+}
+```
+
+Turbopack provides:
+- **Faster hot module reload**: See changes instantly
+- **Improved build performance**: Quicker development cycles
+
+### Font optimization
+
+Pointer uses Next.js font optimization with Geist fonts:
+
+```typescript
+import { Geist, Geist_Mono } from "next/font/google";
+
+const geistSans = Geist({
+  variable: "--font-geist-sans",
+  subsets: ["latin"],
+});
+
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
+  subsets: ["latin"],
+});
+```
+
+This ensures fonts load quickly and efficiently without layout shifts.
+
+## Authentication
+
+Pointer uses Clerk for authentication, providing:
+
+- **Multiple sign-in methods**: Email, social providers
+- **Secure session management**: Token-based authentication
+- **User profile management**: Update profile information
+
+```typescript
+<ClerkProvider
+  publishableKey={CLERK_PUBLISHABLE_KEY}
+  signInFallbackRedirectUrl={"/main"}
+  signUpFallbackRedirectUrl={"/main"}
+  signInUrl="/"
+  signUpUrl="/sign-up"
+>
+  {/* App content */}
+</ClerkProvider>
+```
+
+## State management
+
+Pointer uses multiple state management solutions:
+
+### Zustand for client state
+
+```typescript
+import { create } from "zustand";
+import { persist, createJSONStorage } from "zustand/middleware";
+
+interface PreferencesStore {
+  currentView: "home" | "note" | "graph" | "whiteboard" | "settings";
+  currentNoteId: string | null;
+  setCurrentView: (view: ...) => void;
+}
+
+export const usePreferencesStore = create<PreferencesStore>()(
+  persist(
+    (set) => ({ /* ... */ }),
+    {
+      name: "pointer-preferences",
+      storage: createJSONStorage(() => localStorage),
+    }
+  )
+);
+```
+
+### SWR for data fetching
+
+```typescript
+import { SWRConfig } from "swr";
+
+<SWRConfig>
+  {/* App content */}
+</SWRConfig>
+```
+
+## Analytics
+
+Pointer uses PostHog for product analytics:
+
+```typescript
+<PostHogContextProvider>
+  {/* App content */}
+</PostHogContextProvider>
+```
+
+This helps track usage patterns and improve the product.
+
+<Note>
+  All analytics are anonymized and respect user privacy. You can opt out in your settings.
+</Note>
+
+## Accessibility
+
+Pointer is built with accessibility in mind:
+
+- **Keyboard navigation**: Full keyboard support
+- **Screen reader support**: Semantic HTML and ARIA labels
+- **Focus management**: Clear focus indicators
+- **High contrast**: Works with system high contrast modes
+
+All UI components use Radix UI primitives, which provide excellent accessibility out of the box.
+
+## Deploying the web app
+
+The Pointer web app can be deployed to any platform that supports Next.js:
+
+<CardGroup cols={2}>
+  <Card title="Vercel" icon="triangle" href="https://vercel.com">
+    Optimized hosting for Next.js apps
+  </Card>
+  <Card title="Self-hosted" icon="server" href="/development/self-hosting">
+    Deploy on your own infrastructure
+  </Card>
+</CardGroup>

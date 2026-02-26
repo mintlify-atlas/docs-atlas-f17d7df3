@@ -1,0 +1,187 @@
+---
+title: Using the editor
+description: Learn how to use Pointer's powerful rich text editor
+---
+
+# Using the editor
+
+Pointer's rich text editor is powered by TipTap, providing a modern and intuitive writing experience with extensive formatting capabilities.
+
+## Text formatting
+
+The editor supports a wide range of text formatting options:
+
+### Basic formatting
+
+- **Bold**: Make text bold
+- *Italic*: Italicize text
+- <u>Underline</u>: Underline text
+- ~~Strikethrough~~: Strike through text
+- `Code`: Inline code formatting
+- Highlight: Highlight text with color
+
+### Advanced formatting
+
+<Tabs>
+  <Tab title="Superscript & Subscript">
+    - Superscript: x²
+    - Subscript: H₂O
+  </Tab>
+  <Tab title="Text alignment">
+    - Left align (default)
+    - Center align
+    - Right align
+    - Justify
+  </Tab>
+  <Tab title="Colors">
+    Apply custom text colors using the color picker in the toolbar
+  </Tab>
+</Tabs>
+
+## Block types
+
+### Headings
+
+The editor supports six levels of headings:
+
+```markdown
+# Heading 1
+## Heading 2
+### Heading 3
+#### Heading 4
+##### Heading 5
+###### Heading 6
+```
+
+### Lists
+
+<Accordion title="Ordered lists">
+  Create numbered lists:
+  
+  1. First item
+  2. Second item
+  3. Third item
+</Accordion>
+
+<Accordion title="Unordered lists">
+  Create bullet point lists:
+  
+  - First item
+  - Second item
+  - Third item
+</Accordion>
+
+### Code blocks
+
+Insert code blocks with syntax highlighting:
+
+```typescript
+function hello() {
+  console.log("Hello, world!");
+}
+```
+
+The editor uses `@tiptap/extension-code-block-lowlight` for syntax highlighting.
+
+### Tables
+
+Create and edit tables directly in the editor:
+
+| Column 1 | Column 2 | Column 3 |
+|----------|----------|----------|
+| Cell 1   | Cell 2   | Cell 3   |
+| Cell 4   | Cell 5   | Cell 6   |
+
+The editor uses `@tiptap/extension-table` for table support.
+
+### Blockquotes
+
+Add blockquotes for emphasis:
+
+> This is a blockquote
+> It can span multiple lines
+
+### Images
+
+Insert images directly into your notes using `@tiptap/extension-image`.
+
+<Note>
+  Images are stored in Convex and tracked using the `imageReferences` table to ensure proper cleanup.
+</Note>
+
+## Floating toolbar
+
+When you select text, a floating toolbar appears with quick access to formatting options:
+
+- Text formatting (bold, italic, underline, strikethrough)
+- Text color and highlighting
+- Link insertion
+- Code formatting
+
+## Auto-save
+
+Pointer automatically saves your work as you type:
+
+- **Throttle**: Changes are captured every 100ms
+- **Debounce**: Final save occurs 2 seconds after you stop typing
+- **Change detection**: Uses lightweight hashing to detect actual changes
+
+<Tip>
+  You don't need to manually save your work. Pointer handles this automatically.
+</Tip>
+
+## Keyboard shortcuts
+
+The editor supports many keyboard shortcuts for common operations. See the [keyboard shortcuts guide](/guides/keyboard-shortcuts) for a complete list.
+
+## Collaboration features
+
+When working in a collaborative note, you'll see:
+
+- **Real-time cursors**: See where other people are editing
+- **User presence**: Know who else is in the document
+- **Live updates**: Changes appear instantly
+
+See the [collaboration guide](/features/collaboration) for more details.
+
+## Emoji support
+
+The editor includes emoji support via `@tiptap/extension-emoji`:
+
+- Type `:` followed by an emoji name
+- Select from the autocomplete menu
+- Insert emoji directly
+
+## Links
+
+Add links to your notes using `@tiptap/extension-link`:
+
+1. Select text
+2. Click the link icon in the toolbar
+3. Enter the URL
+4. Press Enter
+
+<Note>
+  Links open in a new tab when clicked while holding Cmd (Mac) or Ctrl (Windows/Linux).
+</Note>
+
+## Typography enhancements
+
+Pointer uses `@tiptap/extension-typography` to automatically:
+
+- Convert quotes to smart quotes
+- Replace `--` with em dashes
+- Replace `...` with ellipsis
+- Apply other typographic improvements
+
+## Placeholder text
+
+Empty notes show placeholder text to guide you:
+
+```typescript
+{
+  placeholder: "Start typing..."
+}
+```
+
+This is powered by `@tiptap/extension-placeholder`.

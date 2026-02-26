@@ -1,0 +1,203 @@
+---
+title: Collaboration
+description: Work together in real-time with collaborative note editing
+icon: users
+---
+
+Pointer supports real-time collaborative editing, allowing multiple users to work on the same note simultaneously. Collaboration is powered by a WebSocket-based system that syncs changes instantly across all connected users.
+
+## How collaboration works
+
+Collaborative notes use a different editor component that handles real-time synchronization:
+
+<Steps>
+  <Step title="Enable collaboration on a note">
+    Set the `collaborative` field to `true` when creating or updating a note. This switches the note to use the collaborative editor.
+  </Step>
+  <Step title="Real-time syncing begins">
+    The `CollaborativeEditor` component establishes a WebSocket connection and begins syncing changes between all connected users.
+  </Step>
+  <Step title="Changes propagate instantly">
+    When one user types, their changes are immediately visible to all other users viewing the same note.
+  </Step>
+</Steps>
+
+## Connection status
+
+The collaborative editor displays real-time connection status:
+
+<Tabs>
+  <Tab title="Connecting">
+    <Warning>
+      The editor is establishing a connection to the collaboration server. Editing is temporarily disabled.
+    </Warning>
+  </Tab>
+  <Tab title="Connected">
+    <Tip>
+      You're connected! All changes will sync in real-time with other collaborators.
+    </Tip>
+  </Tab>
+  <Tab title="Disconnected">
+    <Warning>
+      Connection lost. The editor is disabled until the connection is restored. Changes made offline won't be synced.
+    </Warning>
+  </Tab>
+</Tabs>
+
+## Sharing notes
+
+Notes can be shared with specific users through the `documentShares` system:
+
+```typescript
+documentShares: {
+  documentId: Id<"notes">,
+  userEmail: string,
+  userId: string,
+  ownerEmail: string,
+  ownerId: string
+}
+```
+
+### Sharing a note
+
+<Steps>
+  <Step title="Create a share record">
+    Add a new entry to the `documentShares` table with the note ID and the user's email and ID.
+  </Step>
+  <Step title="User gains access">
+    The shared user can now view and edit the note if they have the proper permissions.
+  </Step>
+  <Step title="Query shared notes">
+    Use the `by_userId` index to find all notes shared with a specific user.
+  </Step>
+</Steps>
+
+## Collaborative editor features
+
+The collaborative editor includes all standard editing features plus:
+
+- **Connection status indicator**: Visual feedback on connection state
+- **Disabled state**: Editor is automatically disabled when disconnected
+- **Optimized syncing**: Changes are debounced and throttled for performance
+- **Conflict resolution**: Automatic handling of simultaneous edits
+
+## Editor differences
+
+The collaborative editor has some differences from the single-user editor:
+
+<Note>
+  **Key differences:**
+  - Uses `CollaborativeEditor` instead of `SimpleEditor`
+  - Shows loading state while content is being fetched
+  - Displays connection status in the floating toolbar
+  - Automatically disables editing when disconnected
+</Note>
+
+## Implementation details
+
+### CollaborativeNotebookView component
+
+The collaborative view handles connection state management:
+
+```tsx
+const [connectionStatus, setConnectionStatus] = useState<
+  "connecting" | "connected" | "disconnected"
+>("connecting");
+
+<CollaborativeEditor
+  id={currentNote?.pointer_id || "default-doc"}
+  content={noteContent}
+  editorRef={editorRef}
+  onEditorReady={setEditor}
+  onConnectionStatusChange={setConnectionStatus}
+/>
+```
+
+### Toolbar integration
+
+The floating toolbar receives connection status and adapts its behavior:
+
+```tsx
+<FloatingToolbar
+  editor={editor}
+  editorContainerRef={editorContainerRef}
+  connectionStatus={connectionStatus}
+  isCollaborative={true}
+/>
+```
+
+<Tip>
+  When `isCollaborative={true}` and connection status is not "connected", the toolbar automatically disables all editing actions.
+</Tip>
+
+## Loading states
+
+The collaborative editor shows a loading spinner while content is being fetched:
+
+```tsx
+{isLoadingContent ? (
+  <div className="flex items-center justify-center h-64">
+    <div className="flex items-center gap-2 text-muted-foreground">
+      <Loader2 className="h-4 w-4 animate-spin" />
+      <span>Loading content...</span>
+    </div>
+  </div>
+) : (
+  <CollaborativeEditor ... />
+)}
+```
+
+## Performance optimization
+
+The `CollaborativeNotebookView` uses React optimization techniques:
+
+- `memo()` wrapper to prevent unnecessary re-renders
+- `useMemo()` for computed values like last saved time
+- Efficient state management with focused updates
+
+```tsx
+const lastSavedTime = useMemo(() => {
+  return currentNote
+    ? new Date(currentNote.updatedAt).toLocaleString()
+    : new Date().toLocaleString();
+}, [currentNote]);
+```
+
+## Best practices
+
+<AccordionGroup>
+  <Accordion title="Use collaborative mode for team notes">
+    Enable `collaborative: true` on notes that multiple team members need to edit together.
+  </Accordion>
+
+  <Accordion title="Keep single-user notes non-collaborative">
+    Personal notes should use `collaborative: false` for better performance and simpler state management.
+  </Accordion>
+
+  <Accordion title="Handle connection failures gracefully">
+    Always check connection status before allowing edits. The toolbar's `isDisabled` prop handles this automatically.
+  </Accordion>
+
+  <Accordion title="Index shared documents properly">
+    Use the `by_userId` and `by_document_user` indexes to efficiently query shared notes.
+  </Accordion>
+</AccordionGroup>
+
+## Querying shared notes
+
+To find all notes shared with a user:
+
+```typescript
+// Query by user ID
+const shares = await db
+  .query("documentShares")
+  .withIndex("by_userId", (q) => q.eq("userId", currentUserId))
+  .collect();
+
+// Get the shared note IDs
+const sharedNoteIds = shares.map(share => share.documentId);
+```
+
+<Warning>
+  Always validate user permissions before granting access to shared notes. The `documentShares` table establishes the relationship, but authorization logic must be implemented separately.
+</Warning>

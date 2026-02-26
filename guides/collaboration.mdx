@@ -1,0 +1,229 @@
+---
+title: Collaboration
+description: Work together in real-time with Pointer's collaboration features
+---
+
+# Collaboration
+
+Pointer enables real-time collaboration, allowing multiple users to work on the same note simultaneously.
+
+## Real-time editing
+
+Pointer uses Yjs and Hocuspocus for real-time collaborative editing:
+
+```typescript
+import { HocuspocusProvider } from "@hocuspocus/provider";
+import { Collaboration } from "@tiptap/extension-collaboration";
+import { CollaborationCursor } from "@tiptap/extension-collaboration-caret";
+```
+
+### How it works
+
+<Steps>
+  <Step title="Create a collaborative note">
+    Enable collaboration when creating a note
+  </Step>
+  <Step title="Share with others">
+    Invite collaborators by sharing the note
+  </Step>
+  <Step title="Edit together">
+    All participants see changes in real-time
+  </Step>
+  <Step title="See cursors">
+    View where others are editing with colored cursors
+  </Step>
+</Steps>
+
+## Collaborative vs. single-user notes
+
+Pointer distinguishes between collaborative and single-user notes:
+
+```typescript
+// From convex/schema.ts
+notes: defineTable({
+  collaborative: v.boolean(),
+  // ... other fields
+})
+```
+
+<Tabs>
+  <Tab title="Collaborative notes">
+    - Real-time synchronization via Yjs
+    - Multiple users can edit simultaneously
+    - Cursor positions visible
+    - Changes propagate instantly
+    - Uses `CollaborativeNotebookView` component
+  </Tab>
+  <Tab title="Single-user notes">
+    - Local editing with Convex sync
+    - Faster for individual work
+    - No real-time cursor tracking
+    - Simpler conflict resolution
+    - Uses `NotebookView` component
+  </Tab>
+</Tabs>
+
+## Document sharing
+
+Pointer uses the `documentShares` table to manage access:
+
+```typescript
+// From convex/schema.ts
+documentShares: defineTable({
+  documentId: v.id("notes"),
+  userEmail: v.string(),
+  userId: v.string(),
+  ownerEmail: v.string(),
+  ownerId: v.string(),
+})
+  .index("by_document_user", ["documentId", "userId", "userEmail"])
+  .index("by_userId", ["userId"])
+```
+
+### Sharing a note
+
+<Steps>
+  <Step title="Open the note">
+    Navigate to the note you want to share
+  </Step>
+  <Step title="Click share">
+    Click the share button in the toolbar
+  </Step>
+  <Step title="Enter email">
+    Enter the collaborator's email address
+  </Step>
+  <Step title="Send invitation">
+    The user will receive access to the note
+  </Step>
+</Steps>
+
+<Note>
+  Both the owner and collaborators can see who has access to a shared note.
+</Note>
+
+## Connection status
+
+The collaborative editor shows connection status:
+
+- **Connecting**: Establishing connection to collaboration server
+- **Connected**: Real-time sync active
+- **Disconnected**: Connection lost, retrying
+
+<Warning>
+  If you see "Disconnected" for an extended period, check your internet connection.
+</Warning>
+
+## Cursor awareness
+
+With `@tiptap/extension-collaboration-caret`, you can see:
+
+- **Cursor positions**: Where other users are typing
+- **Selections**: What text others have selected
+- **User names**: Who each cursor belongs to
+- **Colors**: Different colors for each user
+
+```typescript
+CollaborationCursor.configure({
+  provider: hocuspocusProvider,
+  user: {
+    name: userName,
+    color: userColor,
+  },
+})
+```
+
+## Conflict resolution
+
+Yjs handles conflicts automatically:
+
+- **Operational transformation**: Merges changes intelligently
+- **No "last write wins"**: All changes are preserved
+- **Consistent state**: Everyone sees the same document
+
+<Tip>
+  Yjs is a proven CRDT (Conflict-free Replicated Data Type) implementation, ensuring data consistency even with concurrent edits.
+</Tip>
+
+## Performance
+
+Pointer optimizes collaborative editing:
+
+### Memoization
+
+```typescript
+const MemoizedEditor = React.memo(
+  TipTapEditor,
+  (prev, next) => prev.note?.pointer_id === next.note?.pointer_id
+);
+```
+
+This prevents unnecessary re-renders when other props change.
+
+### Loading states
+
+```typescript
+{isConnecting && <LoadingSpinner />}
+{isConnected && <Editor />}
+{isDisconnected && <ErrorMessage />}
+```
+
+Clear feedback for users during connection changes.
+
+## Access control
+
+Pointer manages access at multiple levels:
+
+1. **Document level**: `documentShares` table
+2. **Tenant level**: `tenantId` on notes
+3. **User authentication**: Clerk integration
+
+<Accordion title="Permission model">
+  Currently, Pointer uses a simple shared/not-shared model:
+  
+  - Document owner has full access
+  - Shared users have full edit access
+  - Non-shared users have no access
+  
+  Future versions may include read-only access and more granular permissions.
+</Accordion>
+
+## Best practices
+
+<CardGroup cols={2}>
+  <Card title="Communication" icon="comments">
+    Use separate chat for coordination
+  </Card>
+  <Card title="Save often" icon="floppy-disk">
+    Changes save automatically, but be aware of connection status
+  </Card>
+  <Card title="Avoid conflicts" icon="handshake">
+    Work on different sections when possible
+  </Card>
+  <Card title="Clear naming" icon="tag">
+    Use clear note names for shared documents
+  </Card>
+</CardGroup>
+
+## Troubleshooting
+
+### Connection issues
+
+If you can't connect to a collaborative session:
+
+1. Check your internet connection
+2. Refresh the page
+3. Clear browser cache
+4. Check if Hocuspocus server is running
+
+### Sync problems
+
+If changes aren't syncing:
+
+1. Verify connection status
+2. Check browser console for errors
+3. Ensure you have proper access permissions
+4. Try closing and reopening the note
+
+<Note>
+  Collaborative notes automatically redirect to `/main/collab/[slug]` when opened.
+</Note>

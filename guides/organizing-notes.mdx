@@ -1,0 +1,180 @@
+---
+title: Organizing notes
+description: Learn how to organize your notes with folders and hierarchies
+---
+
+# Organizing notes
+
+Pointer provides powerful organization features to help you keep your notes structured and easy to find.
+
+## Folder structure
+
+Pointer supports hierarchical folder organization, allowing you to create nested folders to organize your notes.
+
+### Creating folders
+
+<Steps>
+  <Step title="Open the sidebar">
+    Navigate to the notes view in Pointer
+  </Step>
+  <Step title="Create a folder">
+    Click the "New Folder" button or right-click in the sidebar
+  </Step>
+  <Step title="Name your folder">
+    Give your folder a descriptive name
+  </Step>
+  <Step title="Add notes">
+    Drag notes into the folder or create new notes inside it
+  </Step>
+</Steps>
+
+### Folder hierarchy
+
+Pointer uses a parent-child relationship for organizing notes and folders:
+
+```typescript
+// From convex/schema.ts
+notes: defineTable({
+  name: v.string(),
+  type: v.optional(v.union(v.literal("file"), v.literal("folder"))),
+  parent_id: v.optional(v.id("notes")),
+  // ... other fields
+})
+  .index("by_parent", ["parent_id"])
+  .index("by_type_parent", ["type", "parent_id"])
+```
+
+<Note>
+  Folders are stored as special note entries with `type: "folder"` in the database.
+</Note>
+
+## Folder operations
+
+Pointer's `use-folder-operations` hook provides functionality for managing folders:
+
+### Moving notes
+
+Move notes between folders by:
+
+1. Dragging and dropping in the sidebar
+2. Using the context menu "Move to" option
+3. Updating the `parent_id` field
+
+### Nested folders
+
+Create nested folder structures for complex organization:
+
+```
+Projects/
+  ├── Work/
+  │   ├── Project A/
+  │   └── Project B/
+  └── Personal/
+      ├── Ideas/
+      └── Notes/
+```
+
+<Tip>
+  Keep your folder structure shallow (2-3 levels maximum) for easier navigation.
+</Tip>
+
+## Search and filtering
+
+Quickly find notes using Pointer's search features:
+
+### Global search
+
+Press `Cmd/Ctrl + K` to open the command menu and search across all notes:
+
+- Search by note name
+- Search by content
+- Filter by folder
+- Recent notes appear first
+
+### Filtering by type
+
+Pointer indexes notes by type for efficient filtering:
+
+```typescript
+.index("by_type_parent", ["type", "parent_id"])
+```
+
+This allows quick queries like:
+- Show only files in a folder
+- Show only subfolders
+- List all top-level items
+
+## Note metadata
+
+Each note includes metadata for organization:
+
+| Field | Purpose |
+|-------|---------||
+| `createdAt` | When the note was created |
+| `lastEdited` | Last modification time |
+| `lastAccessed` | Last time the note was opened |
+| `updatedAt` | Last update timestamp |
+
+<Accordion title="Sorting by metadata">
+  Use metadata fields to sort your notes:
+  
+  - Most recently edited
+  - Most recently accessed
+  - Alphabetically by name
+  - Creation date
+</Accordion>
+
+## Multi-tenant organization
+
+Pointer uses a multi-tenant architecture:
+
+```typescript
+notes: defineTable({
+  tenantId: v.string(),
+  // ... other fields
+})
+  .index("by_tenant", ["tenantId"])
+```
+
+This ensures:
+- Your notes are completely isolated from other users
+- Fast queries within your workspace
+- Secure data separation
+
+## Best practices
+
+<CardGroup cols={2}>
+  <Card title="Use descriptive names" icon="font">
+    Give folders and notes clear, descriptive names
+  </Card>
+  <Card title="Keep it shallow" icon="layer-group">
+    Limit folder nesting to 2-3 levels
+  </Card>
+  <Card title="Leverage search" icon="magnifying-glass">
+    Use search instead of deep folder structures
+  </Card>
+  <Card title="Regular cleanup" icon="broom">
+    Archive or delete old notes periodically
+  </Card>
+</CardGroup>
+
+## Bulk operations
+
+The `use-folder-operations` hook enables bulk operations:
+
+- Move multiple notes at once
+- Delete folders and their contents
+- Rename folders
+- Reorganize hierarchy
+
+<Warning>
+  Deleting a folder will delete all notes inside it. Make sure to move important notes out first.
+</Warning>
+
+## Graph view integration
+
+Notes organized in folders can still be visualized in the [graph view](/features/graph-view), where relationships between notes are displayed regardless of folder structure.
+
+<Tip>
+  Use folders for hierarchical organization and the graph view to discover connections between notes.
+</Tip>

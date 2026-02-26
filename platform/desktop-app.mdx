@@ -1,0 +1,136 @@
+---
+title: Desktop app
+description: Native desktop experience powered by Tauri
+---
+
+# Desktop app
+
+Pointer offers a native desktop application built with Tauri, providing a fast and efficient experience with deep system integration.
+
+## Overview
+
+The Pointer desktop app is built using Tauri 2, a Rust-based framework that creates native desktop applications with web frontends. This approach provides the best of both worlds: the flexibility of web technologies with the performance and system access of native apps.
+
+## Features
+
+### Native performance
+
+The desktop app uses Rust for the backend, providing:
+
+- **Fast startup times**: Launch the app instantly
+- **Low memory footprint**: Efficient resource usage
+- **Native system integration**: Access to system APIs and features
+
+### System integrations
+
+The desktop app includes several system-level integrations:
+
+<Accordion title="Clipboard management">
+  Access and manage clipboard content using the `tauri-plugin-clipboard-manager` plugin.
+</Accordion>
+
+<Accordion title="File system access">
+  Read and write files to your local system using the `tauri-plugin-fs` plugin.
+</Accordion>
+
+<Accordion title="Global shortcuts">
+  Set up global keyboard shortcuts using the `tauri-plugin-global-shortcut` plugin (desktop only, not available on mobile).
+</Accordion>
+
+<Accordion title="Notifications">
+  Send native system notifications using the `tauri-plugin-notification` plugin.
+</Accordion>
+
+<Accordion title="Shell commands">
+  Execute shell commands using the `tauri-plugin-shell` plugin.
+</Accordion>
+
+## Technology stack
+
+The desktop app is built with:
+
+```toml
+[dependencies]
+tauri = { version = "2", features = [] }
+tauri-plugin-shell = "2"
+tauri-plugin-process = "2"
+tauri-plugin-clipboard-manager = "2"
+tauri-plugin-dialog = "2"
+tauri-plugin-http = "2"
+tauri-plugin-os = "2"
+tauri-plugin-notification = "2"
+tauri-plugin-fs = "2"
+
+[target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
+tauri-plugin-global-shortcut = "2"
+```
+
+## AI integration
+
+The desktop app includes AI-powered features using the Groq API:
+
+- **Voice transcription**: Convert voice recordings to text
+- **Smart suggestions**: Get AI-powered suggestions while writing
+
+```toml
+[dependencies]
+groq-api-rust = "0.2.51"
+hound = "3.5.1"  # For audio processing
+```
+
+## Building the desktop app
+
+<Steps>
+  <Step title="Install Rust">
+    First, install Rust from [rustup.rs](https://rustup.rs/)
+    
+    ```bash
+    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+    ```
+  </Step>
+  
+  <Step title="Install Tauri CLI">
+    Install the Tauri CLI as a dev dependency:
+    
+    ```bash
+    npm install --save-dev @tauri-apps/cli
+    ```
+  </Step>
+  
+  <Step title="Build the app">
+    Build the desktop app:
+    
+    ```bash
+    npm run tauri build
+    ```
+  </Step>
+</Steps>
+
+## Differences from web app
+
+The desktop app provides additional features not available in the web version:
+
+| Feature | Web App | Desktop App |
+|---------|---------|-------------|
+| Offline access | Limited | Full support |
+| File system access | No | Yes |
+| Global shortcuts | No | Yes |
+| Native notifications | Limited | Full support |
+| System integration | No | Yes |
+| Performance | Good | Excellent |
+
+<Tip>
+  The desktop app shares the same codebase as the web app, ensuring feature parity and consistent behavior across platforms.
+</Tip>
+
+## Platform support
+
+The Pointer desktop app supports:
+
+- **Windows**: Windows 10 and later
+- **macOS**: macOS 10.15 (Catalina) and later
+- **Linux**: Most modern distributions
+
+<Note>
+  Some features like global shortcuts are only available on desktop platforms (not on Android or iOS).
+</Note>

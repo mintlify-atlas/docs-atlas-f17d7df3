@@ -1,0 +1,168 @@
+---
+title: Keyboard shortcuts
+description: Speed up your workflow with Pointer's keyboard shortcuts
+---
+
+# Keyboard shortcuts
+
+Pointer includes comprehensive keyboard shortcuts to help you work more efficiently. This guide covers all available shortcuts across the application.
+
+<Note>
+  On macOS, use `Cmd` instead of `Ctrl` for most shortcuts.
+</Note>
+
+## Global shortcuts
+
+These shortcuts work anywhere in Pointer:
+
+| Shortcut | Action |
+|----------|--------|
+| `Cmd/Ctrl + K` | Open command menu |
+| `Cmd/Ctrl + N` | Create new note |
+| `Cmd/Ctrl + ,` | Open settings |
+
+## Editor shortcuts
+
+### Text formatting
+
+| Shortcut | Action |
+|----------|--------|
+| `Cmd/Ctrl + B` | Bold |
+| `Cmd/Ctrl + I` | Italic |
+| `Cmd/Ctrl + U` | Underline |
+| `Cmd/Ctrl + Shift + X` | Strikethrough |
+| `Cmd/Ctrl + E` | Inline code |
+
+### Text alignment
+
+| Shortcut | Action |
+|----------|--------|
+| `Cmd/Ctrl + Shift + L` | Align left |
+| `Cmd/Ctrl + Shift + E` | Align center |
+| `Cmd/Ctrl + Shift + R` | Align right |
+| `Cmd/Ctrl + Shift + J` | Justify |
+
+### Block formatting
+
+| Shortcut | Action |
+|----------|--------|
+| `Cmd/Ctrl + Alt + 1-6` | Heading level 1-6 |
+| `Cmd/Ctrl + Shift + 8` | Bullet list |
+| `Cmd/Ctrl + Shift + 7` | Numbered list |
+| `Cmd/Ctrl + Shift + B` | Blockquote |
+| `Cmd/Ctrl + Alt + C` | Code block |
+| `Cmd/Ctrl + Shift + K` | Insert link |
+
+### Navigation
+
+| Shortcut | Action |
+|----------|--------|
+| `Arrow Up/Down` | Navigate menu items (vertical) |
+| `Arrow Left/Right` | Navigate menu items (horizontal) |
+| `Tab` | Next menu item |
+| `Shift + Tab` | Previous menu item |
+| `Home` | First menu item |
+| `End` | Last menu item |
+| `Enter` | Select item |
+| `Escape` | Close menu/dialog |
+
+## Table shortcuts
+
+When working with tables:
+
+| Shortcut | Action |
+|----------|--------|
+| `Tab` | Next cell |
+| `Shift + Tab` | Previous cell |
+| `Enter` | Next row |
+
+<Tip>
+  Use the table menu to insert or delete rows and columns quickly.
+</Tip>
+
+## Graph view shortcuts
+
+In the knowledge graph view:
+
+| Shortcut | Action |
+|----------|--------|
+| `Cmd/Ctrl + K` | Open search |
+| `Click` | Select node |
+| `Drag` | Pan view |
+| `Scroll` | Zoom in/out |
+
+## Task management shortcuts
+
+In the task list:
+
+| Shortcut | Action |
+|----------|--------|
+| `Enter` | Create new task (when input focused) |
+| `Click checkbox` | Toggle task completion |
+| `Click task` | Edit task details |
+
+## Whiteboard shortcuts
+
+In whiteboard mode, Pointer uses standard Excalidraw shortcuts:
+
+| Shortcut | Action |
+|----------|--------|
+| `V` | Selection tool |
+| `R` | Rectangle |
+| `D` | Diamond |
+| `O` | Ellipse |
+| `A` | Arrow |
+| `L` | Line |
+| `T` | Text |
+| `Cmd/Ctrl + Z` | Undo |
+| `Cmd/Ctrl + Shift + Z` | Redo |
+| `Delete/Backspace` | Delete selection |
+| `Cmd/Ctrl + D` | Duplicate |
+| `Cmd/Ctrl + G` | Group |
+
+<Note>
+  See the [Excalidraw documentation](https://docs.excalidraw.com/) for a complete list of whiteboard shortcuts.
+</Note>
+
+## Custom keyboard navigation
+
+Pointer uses the `react-hotkeys-hook` library to implement keyboard shortcuts:
+
+```typescript
+import { useHotkeys } from "react-hotkeys-hook";
+
+useHotkeys("cmd+k, ctrl+k", () => {
+  // Open command menu
+});
+```
+
+## Menu navigation
+
+The editor includes intelligent menu navigation:
+
+<Steps>
+  <Step title="Open a menu">
+    Press the trigger key or click to open
+  </Step>
+  <Step title="Navigate items">
+    Use arrow keys, Tab, Home, or End
+  </Step>
+  <Step title="Select an item">
+    Press Enter to select
+  </Step>
+  <Step title="Close menu">
+    Press Escape or click outside
+  </Step>
+</Steps>
+
+## Accessibility
+
+All keyboard shortcuts are designed with accessibility in mind:
+
+- **Focus indicators**: Clear visual feedback for keyboard navigation
+- **Screen reader support**: Proper ARIA labels and roles
+- **No mouse required**: Every action can be performed with keyboard
+
+<Tip>
+  You can customize keyboard shortcuts by modifying the hook configurations in the source code.
+</Tip>

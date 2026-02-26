@@ -1,0 +1,329 @@
+---
+title: Graph view
+description: Visualize your knowledge as an interactive network of connected ideas
+icon: network
+---
+
+The graph view provides a visual representation of your knowledge network, displaying notes, bookmarks, and thoughts as interconnected nodes. This powerful feature helps you discover relationships and patterns in your information.
+
+## Overview
+
+Graph view consists of several key components:
+
+- **Graph canvas**: Interactive force-directed graph visualization
+- **Timeline view**: Chronological display of your nodes
+- **Tag explorer**: Filter nodes by tags
+- **Quick capture**: Add new nodes without leaving the graph
+- **Side panel**: View and edit node details
+- **Search overlay**: Find nodes quickly with keyboard shortcuts
+
+## Node types
+
+The graph supports three primary node types:
+
+<CardGroup cols={3}>
+  <Card title="Thought" icon="brain">
+    Quick text-based ideas and notes (max 280 characters)
+  </Card>
+  <Card title="Bookmark" icon="bookmark">
+    Saved links with title, URL, and optional description
+  </Card>
+  <Card title="Media" icon="image">
+    Images and other media with captions
+  </Card>
+</CardGroup>
+
+### Node structure
+
+Each node contains:
+
+```typescript
+type NodeType = {
+  id: string;
+  type: "thought" | "bookmark" | "media";
+  createdAt: string;
+  tags: string[];
+  // Type-specific fields
+};
+
+// Thought node
+type ThoughtNode = NodeType & {
+  type: "thought";
+  text: string;  // Max 280 characters
+};
+
+// Bookmark node
+type BookmarkNode = NodeType & {
+  type: "bookmark";
+  url: string;
+  title: string;
+  description?: string;
+};
+
+// Media node
+type MediaNode = NodeType & {
+  type: "media";
+  caption: string;
+  mediaUrl: string;
+};
+```
+
+## Navigating the graph
+
+### View modes
+
+Switch between two visualization modes:
+
+<Tabs>
+  <Tab title="Graph">
+    Force-directed graph layout powered by ReactFlow. Nodes are positioned using physics simulation, with connections shown as animated edges.
+    
+    **Features:**
+    - Drag nodes to reposition
+    - Zoom and pan controls
+    - Click nodes to view details
+    - Animated connection lines
+  </Tab>
+  <Tab title="Timeline">
+    Chronological view showing nodes in creation order. Perfect for reviewing your recent captures or tracking how your knowledge evolved over time.
+    
+    **Features:**
+    - Sorted by creation date
+    - Compact list layout
+    - Quick node access
+  </Tab>
+</Tabs>
+
+### Keyboard shortcuts
+
+<Note>
+  The graph view includes powerful keyboard shortcuts for efficient navigation:
+</Note>
+
+| Shortcut | Action |
+|----------|--------|
+| Cmd/Ctrl + K | Open search overlay |
+| Esc | Close modals/panels |
+| Arrow keys | Navigate in capture modal |
+| Enter | Select/submit |
+
+## Capturing nodes
+
+Add new nodes to your graph using the quick capture modal:
+
+<Steps>
+  <Step title="Open the capture modal">
+    Click the floating action button (+ icon) in the bottom-right corner, or use keyboard shortcuts.
+  </Step>
+  <Step title="Select node type">
+    Choose between "Thought" or "Bookmark" tabs based on what you want to capture.
+  </Step>
+  <Step title="Enter content">
+    - **Thought**: Type your idea (up to 280 characters)
+    - **Bookmark**: Enter URL, title, and optional description
+  </Step>
+  <Step title="Add tags">
+    Type tag names and press Enter. The modal suggests existing tags as you type.
+  </Step>
+  <Step title="Submit">
+    Click "Add to Graph" to create the node. It will appear immediately in your graph.
+  </Step>
+</Steps>
+
+### Capture modal features
+
+<AccordionGroup>
+  <Accordion title="Tag autocomplete">
+    As you type in the tag field, the modal shows up to 5 existing tags that match your input. Click a suggestion to add it instantly.
+    
+    ```tsx
+    const filteredAvailableTags = availableTags.filter(
+      (tag) => !tags.includes(tag) && 
+               tag.toLowerCase().includes(newTag.toLowerCase())
+    );
+    ```
+  </Accordion>
+
+  <Accordion title="Character limit for thoughts">
+    Thoughts are limited to 280 characters with a live counter:
+    
+    ```tsx
+    <Textarea
+      placeholder="What's on your mind?"
+      value={text}
+      maxLength={280}
+    />
+    <div className="text-right text-sm text-muted-foreground">
+      {text.length}/280
+    </div>
+    ```
+  </Accordion>
+
+  <Accordion title="Tag management">
+    - Click any tag badge to remove it
+    - Press Enter to add the current tag
+    - Tags are stored with the node and can be used for filtering
+  </Accordion>
+</AccordionGroup>
+
+## Filtering with tags
+
+The tag explorer (desktop only) provides powerful filtering:
+
+- **Tag list**: Shows all unique tags across your nodes
+- **Click to filter**: Select tags to show only matching nodes
+- **Multi-select**: Choose multiple tags to narrow your view
+- **Clear filters**: Click selected tags again to remove them
+
+```tsx
+const filteredNodes = selectedTags.length > 0
+  ? nodes.filter((node) =>
+      selectedTags.some((tag) => node.tags.includes(tag))
+    )
+  : nodes;
+```
+
+<Tip>
+  On mobile devices, active tag filters are shown as badges at the top of the screen. Tap a badge to remove that filter.
+</Tip>
+
+## Graph visualization
+
+The graph canvas uses ReactFlow for interactive visualization:
+
+### Node appearance
+
+Nodes are styled based on their type:
+
+<Tabs>
+  <Tab title="Thought nodes">
+    Blue to cyan gradient with a Type icon
+    ```css
+    from-blue-500 to-cyan-500
+    ```
+  </Tab>
+  <Tab title="Bookmark nodes">
+    Green to emerald gradient with a Link icon
+    ```css
+    from-green-500 to-emerald-500
+    ```
+  </Tab>
+  <Tab title="Media nodes">
+    Purple to pink gradient with an Image icon
+    ```css
+    from-purple-500 to-pink-500
+    ```
+  </Tab>
+</Tabs>
+
+### Edges (connections)
+
+Connections between nodes are displayed as animated edges:
+
+```typescript
+const flowEdges: Edge[] = edges.map((edge) => ({
+  id: edge.id,
+  source: edge.from,
+  target: edge.to,
+  type: "smoothstep",
+  animated: true,
+  style: { stroke: "#8b5cf6", strokeWidth: 2 },
+  markerEnd: {
+    type: MarkerType.ArrowClosed,
+    color: "#8b5cf6",
+  },
+  label: edge.kind.replace("_", " ").toLowerCase(),
+}));
+```
+
+## Side panel
+
+Click any node to open the side panel with details:
+
+- **Node information**: View full content and metadata
+- **Edit mode**: Update node details inline
+- **Related nodes**: See up to 5 related nodes
+- **Delete**: Remove the node from your graph
+- **Close**: Press Esc or click the close button
+
+<Warning>
+  Deleting a node also removes all edges connected to it. This action cannot be undone.
+</Warning>
+
+## Search functionality
+
+The search overlay provides fast node discovery:
+
+<Steps>
+  <Step title="Press Cmd/Ctrl + K">
+    Opens the search overlay from anywhere in the graph view.
+  </Step>
+  <Step title="Type to search">
+    Search across node text, titles, URLs, and descriptions.
+  </Step>
+  <Step title="Select a result">
+    Click or press Enter to open the node in the side panel.
+  </Step>
+</Steps>
+
+## Empty state
+
+When your graph has no nodes, an informative empty state is displayed:
+
+```tsx
+<div className="text-center space-y-4">
+  <div className="h-24 w-24 mx-auto rounded-full bg-gradient-to-r 
+                from-purple-600 to-blue-600 flex items-center justify-center">
+    <Hash className="h-12 w-12 text-white" />
+  </div>
+  <h3 className="text-xl font-semibold">
+    Your Knowledge Graph Awaits
+  </h3>
+  <p className="text-muted-foreground max-w-md">
+    Start building your personal knowledge network by capturing
+    thoughts, bookmarks, and ideas.
+  </p>
+</div>
+```
+
+## Responsive design
+
+The graph view adapts to different screen sizes:
+
+- **Desktop**: Full tag explorer sidebar, sticky toolbar, optimized controls
+- **Mobile**: Collapsible menu, touch-optimized interactions, floating tag filters
+- **Tablet**: Hybrid layout with adaptive components
+
+<Note>
+  The tag explorer is hidden on screens smaller than `lg` breakpoint (1024px). Use the mobile tag filter badges instead.
+</Note>
+
+## Performance considerations
+
+<AccordionGroup>
+  <Accordion title="Node positioning">
+    Initial node positions use a spiral layout with randomization to prevent overlap:
+    
+    ```typescript
+    position: {
+      x: Math.cos(index * (Math.PI * 0.5)) * 300 + Math.random() * 50,
+      y: Math.sin(index * (Math.PI * 0.5)) * 300 + Math.random() * 50,
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Related nodes limit">
+    The side panel shows only 5 related nodes to keep the UI responsive:
+    
+    ```typescript
+    relatedNodes={nodes
+      .filter((n) => n.id !== selectedNode.id)
+      .slice(0, 5)
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Animation performance">
+    Framer Motion is used for smooth animations with hardware acceleration enabled by default.
+  </Accordion>
+</AccordionGroup>

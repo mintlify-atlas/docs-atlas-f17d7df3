@@ -1,0 +1,483 @@
+---
+title: Self-hosting
+description: Deploy Pointer on your own infrastructure
+---
+
+# Self-hosting
+
+Pointer can be self-hosted, giving you full control over your data and deployment.
+
+## Prerequisites
+
+Before self-hosting Pointer, ensure you have:
+
+- **Node.js**: Version 20 or later
+- **npm/yarn/pnpm**: Package manager
+- **Convex account**: For backend services
+- **Clerk account**: For authentication
+- **Domain**: (Optional) For custom domain
+
+<Note>
+  Pointer requires external services (Convex, Clerk) which have free tiers suitable for self-hosting.
+</Note>
+
+## Quick start
+
+<Steps>
+  <Step title="Clone the repository">
+    ```bash
+    git clone https://github.com/ehcaw/pointer.git
+    cd pointer
+    ```
+  </Step>
+  
+  <Step title="Install dependencies">
+    ```bash
+    npm install
+    ```
+  </Step>
+  
+  <Step title="Configure environment">
+    Copy `.env.example` to `.env.local` and fill in values
+  </Step>
+  
+  <Step title="Set up Convex">
+    ```bash
+    npx convex dev
+    ```
+  </Step>
+  
+  <Step title="Run development server">
+    ```bash
+    npm run dev
+    ```
+  </Step>
+</Steps>
+
+## Environment variables
+
+### Required variables
+
+```bash
+# Convex
+NEXT_PUBLIC_CONVEX_URL=https://your-project.convex.cloud
+CONVEX_DEPLOYMENT=your-deployment
+
+# Clerk Authentication
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_...
+CLERK_SECRET_KEY=sk_...
+
+# PostHog (optional)
+NEXT_PUBLIC_POSTHOG_KEY=phc_...
+NEXT_PUBLIC_POSTHOG_HOST=https://app.posthog.com
+
+# Groq API (optional, for AI features)
+GROQ_API_KEY=gsk_...
+```
+
+<Warning>
+  Never commit `.env.local` to version control. Keep your secrets secure.
+</Warning>
+
+## Setting up Convex
+
+<Steps>
+  <Step title="Create Convex project">
+    Visit [convex.dev](https://convex.dev) and create a new project
+  </Step>
+  
+  <Step title="Install Convex CLI">
+    ```bash
+    npm install -g convex
+    ```
+  </Step>
+  
+  <Step title="Initialize Convex">
+    ```bash
+    npx convex dev
+    ```
+    
+    Follow the prompts to link your project
+  </Step>
+  
+  <Step title="Deploy functions">
+    Convex automatically deploys your functions from the `convex/` directory
+  </Step>
+</Steps>
+
+### Convex schema
+
+Pointer's schema is defined in `convex/schema.ts`:
+
+```typescript
+import { defineSchema, defineTable } from "convex/server";
+
+export default defineSchema({
+  notes: defineTable({...}),
+  whiteboards: defineTable({...}),
+  userTasks: defineTable({...}),
+  // ... more tables
+});
+```
+
+<Tip>
+  Convex automatically handles database migrations when you update the schema.
+</Tip>
+
+## Setting up Clerk
+
+<Steps>
+  <Step title="Create Clerk application">
+    Visit [clerk.com](https://clerk.com) and create a new application
+  </Step>
+  
+  <Step title="Configure authentication methods">
+    Enable desired sign-in methods (email, Google, GitHub, etc.)
+  </Step>
+  
+  <Step title="Get API keys">
+    Copy the publishable and secret keys to your `.env.local`
+  </Step>
+  
+  <Step title="Configure redirect URLs">
+    Set allowed redirect URLs in Clerk dashboard:
+    - `http://localhost:3000` (development)
+    - `https://yourdomain.com` (production)
+  </Step>
+</Steps>
+
+### Clerk + Convex integration
+
+Pointer uses `@convex-dev/auth` to integrate Clerk with Convex:
+
+```typescript
+// convex/auth.config.ts
+import { convexAuth } from "@convex-dev/auth/server";
+
+export const { auth, signIn, signOut } = convexAuth({
+  providers: [],
+});
+```
+
+## Deployment options
+
+### Vercel (recommended)
+
+<Steps>
+  <Step title="Install Vercel CLI">
+    ```bash
+    npm install -g vercel
+    ```
+  </Step>
+  
+  <Step title="Deploy">
+    ```bash
+    vercel
+    ```
+  </Step>
+  
+  <Step title="Configure environment">
+    Add environment variables in Vercel dashboard
+  </Step>
+  
+  <Step title="Deploy production">
+    ```bash
+    vercel --prod
+    ```
+  </Step>
+</Steps>
+
+<Accordion title="Why Vercel?">
+  - Zero-config Next.js hosting
+  - Automatic HTTPS
+  - Edge functions
+  - Preview deployments
+  - Excellent performance
+</Accordion>
+
+### Docker
+
+Create a `Dockerfile`:
+
+```dockerfile
+FROM node:20-alpine AS builder
+
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci
+
+COPY . .
+RUN npm run build
+
+FROM node:20-alpine AS runner
+WORKDIR /app
+
+ENV NODE_ENV production
+
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/.next/standalone ./
+COPY --from=builder /app/.next/static ./.next/static
+
+EXPOSE 3000
+CMD ["node", "server.js"]
+```
+
+Build and run:
+
+```bash
+docker build -t pointer .
+docker run -p 3000:3000 --env-file .env.local pointer
+```
+
+### Self-hosted server
+
+<Steps>
+  <Step title="Build the application">
+    ```bash
+    npm run build
+    ```
+  </Step>
+  
+  <Step title="Start the server">
+    ```bash
+    npm start
+    ```
+  </Step>
+  
+  <Step title="Use a process manager">
+    ```bash
+    npm install -g pm2
+    pm2 start npm --name "pointer" -- start
+    ```
+  </Step>
+  
+  <Step title="Set up reverse proxy">
+    Configure nginx or Apache to proxy to port 3000
+  </Step>
+</Steps>
+
+## Setting up collaboration server
+
+For real-time collaboration, you need a Hocuspocus server:
+
+### Option 1: Hocuspocus Cloud
+
+Use the hosted Hocuspocus service (easiest)
+
+### Option 2: Self-hosted Hocuspocus
+
+```javascript
+// server.js
+import { Server } from "@hocuspocus/server";
+
+const server = Server.configure({
+  port: 1234,
+  
+  async onAuthenticate({ token }) {
+    // Verify user token
+  },
+  
+  async onStoreDocument({ documentName, document }) {
+    // Save to Convex
+  },
+});
+
+server.listen();
+```
+
+Run the server:
+
+```bash
+node server.js
+```
+
+<Note>
+  Point your Pointer app to the Hocuspocus server URL in environment variables.
+</Note>
+
+### Option 3: PartyKit
+
+Deploy to PartyKit for edge-based collaboration:
+
+```bash
+cd partykit
+npx partykit deploy
+```
+
+## Database considerations
+
+### Convex storage
+
+Convex provides:
+- **Database**: Automatic scaling
+- **File storage**: Up to 1GB per file
+- **Functions**: Unlimited invocations
+
+### Backup strategy
+
+<Steps>
+  <Step title="Enable Convex backups">
+    Configure automatic backups in Convex dashboard
+  </Step>
+  
+  <Step title="Export data regularly">
+    Use Convex export functionality
+  </Step>
+  
+  <Step title="Version control schema">
+    Keep `convex/schema.ts` in git
+  </Step>
+</Steps>
+
+## Monitoring and logs
+
+### Application logs
+
+```bash
+# View logs with pm2
+pm2 logs pointer
+
+# View Vercel logs
+vercel logs
+```
+
+### Convex logs
+
+View function logs in the Convex dashboard:
+- Query performance
+- Error tracking
+- Function invocations
+
+### PostHog analytics
+
+Monitor:
+- User activity
+- Feature usage
+- Error rates
+- Performance metrics
+
+<Tip>
+  Set up alerts for critical errors and performance degradation.
+</Tip>
+
+## Scaling considerations
+
+### Vertical scaling
+
+- Increase server resources (CPU, RAM)
+- Use faster Convex deployment tier
+- Optimize database queries with indexes
+
+### Horizontal scaling
+
+Next.js can run on multiple servers:
+
+```bash
+# Use a load balancer
+servers:
+  - pointer-1.yourdomain.com
+  - pointer-2.yourdomain.com
+  - pointer-3.yourdomain.com
+```
+
+<Note>
+  Convex and Clerk handle multi-instance deployments automatically.
+</Note>
+
+## Security
+
+### HTTPS
+
+Always use HTTPS in production:
+
+- Let's Encrypt (free)
+- Cloudflare (free tier available)
+- Your hosting provider's SSL
+
+### Environment security
+
+```bash
+# Use a secrets manager
+AWS Secrets Manager
+HashiCorp Vault
+Vercel Environment Variables
+```
+
+### Content Security Policy
+
+Add CSP headers in `next.config.ts`:
+
+```typescript
+const nextConfig = {
+  async headers() {
+    return [
+      {
+        source: '/(.*)',
+        headers: [
+          {
+            key: 'Content-Security-Policy',
+            value: "default-src 'self';"
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+## Troubleshooting
+
+### Build failures
+
+```bash
+# Clear cache
+rm -rf .next
+npm run build
+
+# Check Node version
+node --version  # Should be 20+
+```
+
+### Convex connection issues
+
+1. Verify `NEXT_PUBLIC_CONVEX_URL` is correct
+2. Check Convex dashboard for service status
+3. Ensure functions are deployed: `npx convex deploy`
+
+### Authentication problems
+
+1. Verify Clerk keys are correct
+2. Check redirect URLs in Clerk dashboard
+3. Clear browser cookies and try again
+
+<Warning>
+  Always test thoroughly in a staging environment before deploying to production.
+</Warning>
+
+## Updates and maintenance
+
+### Updating dependencies
+
+```bash
+# Check for updates
+npm outdated
+
+# Update packages
+npm update
+
+# Test after updates
+npm run test
+npm run build
+```
+
+### Convex schema migrations
+
+When updating the schema:
+
+1. Test locally with `npx convex dev`
+2. Review migration plan
+3. Deploy to production with `npx convex deploy`
+
+<Tip>
+  Keep your Pointer instance updated to receive security patches and new features.
+</Tip>

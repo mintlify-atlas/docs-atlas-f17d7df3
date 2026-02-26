@@ -1,0 +1,427 @@
+---
+title: Testing
+description: Testing strategy and running tests in Pointer
+---
+
+# Testing
+
+Pointer uses Vitest for fast, modern testing of both frontend and backend code.
+
+## Test setup
+
+Pointer has two separate test configurations:
+
+### Frontend tests
+
+```typescript
+// vitest.config.ts
+import { defineConfig } from "vitest/config";
+
+export default defineConfig({
+  test: {
+    environment: "jsdom",
+    setupFiles: ["./vitest.setup.ts"],
+    coverage: {
+      reporter: ["text", "html"],
+    },
+  },
+});
+```
+
+### Backend tests
+
+```typescript
+// vitest.convex.config.ts
+import { defineConfig } from "vitest/config";
+
+export default defineConfig({
+  test: {
+    environment: "node",
+    coverage: {
+      reporter: ["text"],
+    },
+  },
+});
+```
+
+<Tip>
+  Separate configurations allow testing frontend and backend independently.
+</Tip>
+
+## Running tests
+
+### All test commands
+
+```json
+{
+  "scripts": {
+    "test": "vitest",
+    "test:watch": "vitest --watch",
+    "test:once": "vitest run",
+    "test:debug": "vitest --inspect-brk --no-file-parallelism",
+    "test:coverage": "vitest --coverage --coverage.reporter=text",
+    "test:ui": "vitest --ui",
+    "test:convex": "vitest --config vitest.convex.config.ts --coverage",
+    "test:all": "vitest run && vitest run --config vitest.convex.config.ts"
+  }
+}
+```
+
+<Tabs>
+  <Tab title="Watch mode">
+    ```bash
+    npm run test:watch
+    ```
+    
+    Tests re-run automatically on file changes
+  </Tab>
+  <Tab title="Run once">
+    ```bash
+    npm run test:once
+    ```
+    
+    Run all tests once and exit
+  </Tab>
+  <Tab title="Coverage">
+    ```bash
+    npm run test:coverage
+    ```
+    
+    Generate coverage report
+  </Tab>
+  <Tab title="UI mode">
+    ```bash
+    npm run test:ui
+    ```
+    
+    Interactive test UI in browser
+  </Tab>
+</Tabs>
+
+## Test structure
+
+Tests are located in `__tests__/` directory:
+
+```
+__tests__/
+├── components/
+│   ├── views/
+│   └── ui/
+├── hooks/
+├── convex/
+└── lib/
+```
+
+<Note>
+  Test files use the `.test.ts` or `.test.tsx` extension.
+</Note>
+
+## Writing tests
+
+### Component tests
+
+```typescript
+import { render, screen } from "@testing-library/react";
+import { describe, it, expect } from "vitest";
+import { MyComponent } from "@/components/MyComponent";
+
+describe("MyComponent", () => {
+  it("renders correctly", () => {
+    render(<MyComponent />);
+    expect(screen.getByText("Hello")).toBeInTheDocument();
+  });
+  
+  it("handles click events", async () => {
+    const { user } = render(<MyComponent />);
+    await user.click(screen.getByRole("button"));
+    expect(screen.getByText("Clicked")).toBeInTheDocument();
+  });
+});
+```
+
+### Hook tests
+
+```typescript
+import { renderHook, act } from "@testing-library/react";
+import { describe, it, expect } from "vitest";
+import { useCounter } from "@/hooks/useCounter";
+
+describe("useCounter", () => {
+  it("increments count", () => {
+    const { result } = renderHook(() => useCounter());
+    
+    act(() => {
+      result.current.increment();
+    });
+    
+    expect(result.current.count).toBe(1);
+  });
+});
+```
+
+### Convex function tests
+
+```typescript
+import { convexTest } from "convex-test";
+import { describe, it, expect } from "vitest";
+import { api } from "@/convex/_generated/api";
+import schema from "@/convex/schema";
+
+describe("notes", () => {
+  it("creates a note", async () => {
+    const t = convexTest(schema);
+    
+    const noteId = await t.mutation(api.notes.createNoteInDb, {
+      name: "Test Note",
+      tenantId: "user123",
+      type: "file",
+    });
+    
+    expect(noteId).toBeDefined();
+    
+    const note = await t.query(api.notes.readNoteFromDb, {
+      pointer_id: noteId,
+    });
+    
+    expect(note?.name).toBe("Test Note");
+  });
+});
+```
+
+<Tip>
+  `convex-test` provides a local Convex environment for testing backend functions.
+</Tip>
+
+## Testing utilities
+
+### Setup file
+
+```typescript
+// vitest.setup.ts
+import "@testing-library/jest-dom";
+import { cleanup } from "@testing-library/react";
+import { afterEach } from "vitest";
+
+afterEach(() => {
+  cleanup();
+});
+```
+
+This ensures:
+- jest-dom matchers are available
+- Components are cleaned up after each test
+
+### Testing Library
+
+Pointer uses Testing Library:
+
+```typescript
+import {
+  render,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react";
+import { userEvent } from "@testing-library/user-event";
+```
+
+**Key functions:**
+- `render()`: Render component
+- `screen`: Query rendered output
+- `userEvent`: Simulate user interactions
+- `waitFor()`: Wait for async updates
+
+<Accordion title="Query methods">
+  Testing Library provides multiple query methods:
+  
+  - `getBy*`: Find element (throws if not found)
+  - `queryBy*`: Find element (returns null if not found)
+  - `findBy*`: Async find (waits for element)
+  
+  Examples:
+  - `getByRole("button")`
+  - `getByText("Submit")`
+  - `getByLabelText("Email")`
+  - `getByTestId("custom-element")`
+</Accordion>
+
+## Mocking
+
+### Mock functions
+
+```typescript
+import { vi } from "vitest";
+
+const mockFn = vi.fn();
+mockFn.mockReturnValue(42);
+mockFn.mockResolvedValue(Promise.resolve("data"));
+
+expect(mockFn).toHaveBeenCalled();
+expect(mockFn).toHaveBeenCalledWith("arg");
+```
+
+### Mock modules
+
+```typescript
+vi.mock("@/lib/api", () => ({
+  fetchData: vi.fn().mockResolvedValue({ data: "test" }),
+}));
+```
+
+### Mock Convex hooks
+
+```typescript
+vi.mock("convex/react", () => ({
+  useQuery: vi.fn(),
+  useMutation: vi.fn(),
+}));
+```
+
+## Coverage
+
+Pointer uses v8 for coverage:
+
+```bash
+npm run test:coverage
+```
+
+Configuration:
+
+```typescript
+coverage: {
+  provider: "v8",
+  reporter: ["text", "html"],
+  exclude: [
+    "**/*.config.*",
+    "**/dist/**",
+    "**/.next/**",
+  ],
+}
+```
+
+### Coverage reports
+
+After running coverage:
+
+```
+----------------------|---------|----------|---------|---------|-------------------
+File                  | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s 
+----------------------|---------|----------|---------|---------|-------------------
+All files             |   75.32 |    68.45 |   71.23 |   76.12 |                   
+ src/components/      |   82.14 |    74.32 |   79.45 |   83.21 |                   
+ src/hooks/           |   68.92 |    62.18 |   65.34 |   70.45 |                   
+```
+
+HTML report in `coverage/index.html`
+
+<Tip>
+  Aim for >80% coverage on critical paths.
+</Tip>
+
+## Debugging tests
+
+### Debug mode
+
+```bash
+npm run test:debug
+```
+
+Then attach a debugger (VS Code, Chrome DevTools)
+
+### VS Code debugging
+
+Add to `.vscode/launch.json`:
+
+```json
+{
+  "type": "node",
+  "request": "launch",
+  "name": "Debug Vitest",
+  "runtimeExecutable": "npm",
+  "runtimeArgs": ["run", "test:debug"],
+  "console": "integratedTerminal"
+}
+```
+
+### Console logging
+
+```typescript
+it("debugs test", () => {
+  console.log("Debug info:", data);
+  // Test code
+});
+```
+
+<Warning>
+  Remove console.log statements before committing.
+</Warning>
+
+## CI/CD testing
+
+Tests should run in CI:
+
+```yaml
+# .github/workflows/test.yml
+name: Tests
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+      - run: npm ci
+      - run: npm run test:all
+```
+
+## Best practices
+
+<CardGroup cols={2}>
+  <Card title="Test behavior" icon="eye">
+    Test what users see, not implementation
+  </Card>
+  <Card title="Isolate tests" icon="box">
+    Each test should be independent
+  </Card>
+  <Card title="Clear names" icon="tag">
+    Describe what the test does
+  </Card>
+  <Card title="Arrange-Act-Assert" icon="list-ol">
+    Structure tests clearly
+  </Card>
+</CardGroup>
+
+### Example: Good test
+
+```typescript
+it("displays error message when form submission fails", async () => {
+  // Arrange
+  const mockSubmit = vi.fn().mockRejectedValue(
+    new Error("Network error")
+  );
+  render(<MyForm onSubmit={mockSubmit} />);
+  
+  // Act
+  await userEvent.click(screen.getByRole("button", { name: "Submit" }));
+  
+  // Assert
+  expect(await screen.findByText("Network error")).toBeInTheDocument();
+});
+```
+
+## Testing checklist
+
+Before submitting a PR:
+
+- [ ] All tests pass locally
+- [ ] New features have tests
+- [ ] Bug fixes have regression tests
+- [ ] Coverage doesn't decrease significantly
+- [ ] No console errors or warnings
+- [ ] Tests run in CI
+
+<Tip>
+  Write tests as you develop, not after. It's easier and catches bugs earlier.
+</Tip>

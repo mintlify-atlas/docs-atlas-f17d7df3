@@ -1,0 +1,291 @@
+---
+title: Integrations
+description: Connect Pointer with third-party services and tools
+---
+
+# Integrations
+
+Pointer includes several integrations with third-party services to enhance your productivity.
+
+## AI integrations
+
+Pointer integrates with AI services for intelligent features:
+
+### Groq API
+
+Pointer uses the Groq API for AI-powered features:
+
+```typescript
+import { groq } from "@ai-sdk/groq";
+import { generateText } from "ai";
+```
+
+This powers:
+- **Smart suggestions**: AI-powered writing suggestions
+- **Content generation**: Help with brainstorming and writing
+- **Voice transcription**: Convert voice recordings to text (desktop app)
+
+<Steps>
+  <Step title="Get API key">
+    Sign up for a Groq API key at [groq.com](https://groq.com)
+  </Step>
+  <Step title="Configure environment">
+    Add your API key to environment variables
+  </Step>
+  <Step title="Enable features">
+    AI features will automatically become available
+  </Step>
+</Steps>
+
+### AI SDK
+
+Pointer uses Vercel's AI SDK:
+
+```json
+{
+  "dependencies": {
+    "@ai-sdk/groq": "^1.2.9",
+    "ai": "^4.3.19"
+  }
+}
+```
+
+This provides:
+- Streaming responses
+- Type-safe API calls
+- Error handling
+- Retry logic
+
+<Tip>
+  The AI SDK makes it easy to switch between different AI providers if needed.
+</Tip>
+
+## Authentication
+
+### Clerk
+
+Pointer uses Clerk for authentication:
+
+```typescript
+import { ClerkProvider } from "@clerk/nextjs";
+import { ClerkAuth } from "@convex-dev/auth/nextjs";
+```
+
+Clerk provides:
+- **Multiple sign-in methods**: Email, Google, GitHub, etc.
+- **Session management**: Secure token-based sessions
+- **User profiles**: Customizable user information
+- **Multi-factor authentication**: Optional 2FA
+
+<Note>
+  Clerk integrates seamlessly with Convex through `@convex-dev/auth`.
+</Note>
+
+## Analytics
+
+### PostHog
+
+Pointer uses PostHog for product analytics:
+
+```typescript
+import posthog from "posthog-js";
+
+<PostHogContextProvider>
+  {/* App content */}
+</PostHogContextProvider>
+```
+
+PostHog tracks:
+- Feature usage
+- User flows
+- Performance metrics
+- Error rates
+
+<Accordion title="Privacy">
+  PostHog analytics are anonymized and respect user privacy:
+  
+  - No personally identifiable information
+  - Optional opt-out
+  - GDPR compliant
+  - Data retention policies
+</Accordion>
+
+## Real-time collaboration
+
+### Hocuspocus
+
+Pointer uses Hocuspocus for real-time collaboration:
+
+```typescript
+import { HocuspocusProvider } from "@hocuspocus/provider";
+import { Collaboration } from "@tiptap/extension-collaboration";
+```
+
+Features:
+- WebSocket-based sync
+- Automatic reconnection
+- Conflict-free replication (CRDT)
+- Cursor awareness
+
+### PartyKit
+
+For additional real-time features:
+
+```typescript
+import { usePartySocket } from "partysocket/react";
+import { YPartyKitProvider } from "y-partykit";
+```
+
+PartyKit provides:
+- Edge-based real-time infrastructure
+- Low-latency connections
+- Scalable WebSocket handling
+
+<Tip>
+  PartyKit and Hocuspocus work together to provide robust real-time collaboration.
+</Tip>
+
+## Storage
+
+### Convex
+
+Convex serves as the primary storage backend:
+
+```typescript
+import { ConvexProvider, ConvexReactClient } from "convex/react";
+import { ConvexHttpClient } from "convex/browser";
+```
+
+Convex provides:
+- Real-time database queries
+- Serverless functions
+- File storage
+- Authentication integration
+
+<CardGroup cols={2}>
+  <Card title="Database" icon="database">
+    Structured data storage with indexes
+  </Card>
+  <Card title="File storage" icon="file">
+    Binary file storage for images
+  </Card>
+  <Card title="Functions" icon="code">
+    Serverless backend logic
+  </Card>
+  <Card title="Real-time" icon="bolt">
+    Live query subscriptions
+  </Card>
+</CardGroup>
+
+## UI components
+
+### Radix UI
+
+Pointer uses Radix UI for accessible components:
+
+```json
+{
+  "@radix-ui/react-dialog": "^1.1.15",
+  "@radix-ui/react-dropdown-menu": "^2.1.16",
+  "@radix-ui/react-tooltip": "^1.2.8"
+  // ... and many more
+}
+```
+
+Benefits:
+- **Accessibility**: WAI-ARIA compliant
+- **Unstyled**: Full style control
+- **Composable**: Build complex UIs
+- **Type-safe**: Full TypeScript support
+
+### shadcn/ui
+
+Pointer uses shadcn/ui patterns:
+
+```json
+{
+  "components.json": {
+    "style": "default",
+    "tailwind": {
+      "config": "tailwind.config.js"
+    }
+  }
+}
+```
+
+<Note>
+  Component configurations are stored in `components.json` for easy customization.
+</Note>
+
+## Editor integrations
+
+### TipTap extensions
+
+Pointer uses numerous TipTap extensions:
+
+- **Collaboration**: `@tiptap/extension-collaboration`
+- **Code blocks**: `@tiptap/extension-code-block-lowlight`
+- **Tables**: `@tiptap/extension-table`
+- **Images**: `@tiptap/extension-image`
+- **Links**: `@tiptap/extension-link`
+- **Typography**: `@tiptap/extension-typography`
+- **Emoji**: `@tiptap/extension-emoji`
+
+See the [editor documentation](/guides/editor) for details.
+
+### Excalidraw
+
+For whiteboard functionality:
+
+```typescript
+import { Excalidraw } from "@excalidraw/excalidraw";
+```
+
+Excalidraw provides:
+- Drawing tools
+- Shape library
+- Export capabilities
+- Collaboration support
+
+## Form handling
+
+### React Hook Form
+
+Pointer uses React Hook Form for forms:
+
+```typescript
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers";
+import { z } from "zod";
+```
+
+Features:
+- Type-safe form validation
+- Zod schema integration
+- Minimal re-renders
+- Error handling
+
+## Adding custom integrations
+
+To add your own integrations:
+
+<Steps>
+  <Step title="Install dependencies">
+    ```bash
+    npm install your-integration-package
+    ```
+  </Step>
+  <Step title="Configure environment">
+    Add API keys to `.env.local`
+  </Step>
+  <Step title="Create provider">
+    Wrap your app in the integration's provider
+  </Step>
+  <Step title="Use in components">
+    Access the integration via hooks or context
+  </Step>
+</Steps>
+
+<Warning>
+  Always secure API keys and tokens in environment variables, never commit them to version control.
+</Warning>

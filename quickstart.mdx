@@ -1,80 +1,170 @@
 ---
-title: "Quickstart"
-description: "Start building awesome documentation in minutes"
+title: Quickstart
+description: Get started with Pointer in just a few minutes
 ---
 
-## Get started in three steps
+# Quickstart
 
-Get your documentation site running locally and make your first customization.
+Get up and running with Pointer quickly and start organizing your thoughts, notes, and ideas.
 
-### Step 1: Set up your local environment
+## Sign up for Pointer
 
-<AccordionGroup>
-  <Accordion icon="copy" title="Clone your docs locally">
-    During the onboarding process, you created a GitHub repository with your docs content if you didn't already have one. You can find a link to this repository in your [dashboard](https://dashboard.mintlify.com).
+<Steps>
+  <Step title="Visit Pointer">
+    Navigate to the Pointer application (web or desktop)
+  </Step>
+  
+  <Step title="Create an account">
+    Sign up using your email or social login (Google, GitHub)
     
-    To clone the repository locally so that you can make and preview changes to your docs, follow the [Cloning a repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) guide in the GitHub docs.
-  </Accordion>
-  <Accordion icon="rectangle-terminal" title="Start the preview server">
-    1. Install the Mintlify CLI: `npm i -g mint`
-    2. Navigate to your docs directory and run: `mint dev`
-    3. Open `http://localhost:3000` to see your docs live!
+    Pointer uses Clerk for secure authentication
+  </Step>
+  
+  <Step title="Verify your email">
+    Check your email for a verification link and click to confirm
+  </Step>
+  
+  <Step title="Complete onboarding">
+    Follow the brief onboarding flow to set up your workspace
+  </Step>
+</Steps>
+
+<Tip>
+  Use the same account on web and desktop to sync your notes across devices.
+</Tip>
+
+## Create your first note
+
+<Steps>
+  <Step title="Click 'New Note'">
+    Press `Cmd/Ctrl + N` or click the new note button
+  </Step>
+  
+  <Step title="Give it a name">
+    Enter a descriptive name for your note
+  </Step>
+  
+  <Step title="Start writing">
+    Begin typing in the rich text editor
     
-    <Tip>Your preview updates automatically as you edit files.</Tip>
-  </Accordion>
-</AccordionGroup>
-
-### Step 2: Deploy your changes
-
-<AccordionGroup>
-  <Accordion icon="github" title="Install our GitHub app">
-    Install the Mintlify GitHub app from your [dashboard](https://dashboard.mintlify.com/settings/organization/github-app).
+    Try these formatting options:
+    - **Bold**: `Cmd/Ctrl + B`
+    - *Italic*: `Cmd/Ctrl + I`
+    - Headings: `Cmd/Ctrl + Alt + 1-6`
+  </Step>
+  
+  <Step title="Watch it auto-save">
+    Your note saves automatically as you type
     
-    Our GitHub app automatically deploys your changes to your docs site, so you don't need to manage deployments yourself.
-</Accordion>
-<Accordion icon="palette" title="Update your site name and colors">
-    For a first change, let's update the name and colors of your docs site.
+    No need to manually save!
+  </Step>
+</Steps>
 
-    1. Open `docs.json` in your editor.
-    2. Change the `"name"` field to your project name.
-    3. Update the `"colors"` to match your brand.
-    4. Save and see your changes instantly at `http://localhost:3000`.
+## Organize your notes
 
-    <Tip>Try changing the primary color to see an immediate difference!</Tip>
-  </Accordion>
-</AccordionGroup>
+<Steps>
+  <Step title="Create a folder">
+    Right-click in the sidebar or use the new folder button
+  </Step>
+  
+  <Step title="Move notes">
+    Drag and drop notes into folders to organize them
+  </Step>
+  
+  <Step title="Create nested folders">
+    Build a hierarchy that makes sense for your workflow
+  </Step>
+</Steps>
 
-### Step 3: Go live
+<Note>
+  Keep your folder structure simple (2-3 levels max) for easier navigation.
+</Note>
 
-<Accordion icon="rocket" title="Publish your docs">
-  1. Commit and push your changes.
-  2. Your docs will update and be live in moments!
-</Accordion>
+## Try key features
+
+<CardGroup cols={2}>
+  <Card title="Rich text editor" icon="pen-fancy" href="/features/notes">
+    Format text, add tables, code blocks, and images
+  </Card>
+  
+  <Card title="Task management" icon="list-check" href="/features/tasks">
+    Create and organize tasks with due dates
+  </Card>
+  
+  <Card title="Knowledge graph" icon="diagram-project" href="/features/graph-view">
+    Visualize connections between your thoughts
+  </Card>
+  
+  <Card title="Whiteboards" icon="chalkboard" href="/features/whiteboards">
+    Create visual diagrams and sketches
+  </Card>
+</CardGroup>
+
+## Enable collaboration
+
+<Steps>
+  <Step title="Create a collaborative note">
+    Toggle collaboration when creating a new note
+  </Step>
+  
+  <Step title="Share with others">
+    Click the share button and enter collaborator emails
+  </Step>
+  
+  <Step title="Edit together">
+    Work on the same note in real-time
+    
+    You'll see each other's cursors and changes instantly
+  </Step>
+</Steps>
+
+<Tip>
+  See the [collaboration guide](/guides/collaboration) for more details on real-time editing.
+</Tip>
 
 ## Next steps
 
-Now that you have your docs running, explore these key features:
+Now that you're set up, explore more features:
 
 <CardGroup cols={2}>
-
-<Card title="Write Content" icon="pen-to-square" href="/essentials/markdown">
-  Learn MDX syntax and start writing your documentation.
-</Card>
-
-<Card title="Customize style" icon="palette" href="/essentials/settings">
-  Make your docs match your brand perfectly.
-</Card>
-
-<Card title="Add code examples" icon="square-code" href="/essentials/code">
-  Include syntax-highlighted code blocks.
-</Card>
-
-<Card title="API documentation" icon="code" href="/api-reference/introduction">
-  Auto-generate API docs from OpenAPI specs.
-</Card>
-
+  <Card title="Using the editor" icon="keyboard" href="/guides/editor">
+    Learn all the editor features and formatting options
+  </Card>
+  
+  <Card title="Keyboard shortcuts" icon="command" href="/guides/keyboard-shortcuts">
+    Speed up your workflow with keyboard shortcuts
+  </Card>
+  
+  <Card title="Organizing notes" icon="folder" href="/guides/organizing-notes">
+    Master folders, hierarchies, and search
+  </Card>
+  
+  <Card title="Desktop app" icon="desktop" href="/platform/desktop-app">
+    Install the native desktop application
+  </Card>
 </CardGroup>
 
+## Getting help
+
+<Accordion title="Can't sign in?">
+  - Check that you're using the correct email
+  - Try resetting your password
+  - Clear browser cookies and cache
+  - Contact support if issues persist
+</Accordion>
+
+<Accordion title="Notes not syncing?">
+  - Check your internet connection
+  - Verify you're signed into the same account
+  - Look for the sync status indicator
+  - Refresh the page or restart the app
+</Accordion>
+
+<Accordion title="Want to import existing notes?">
+  - See the [data export guide](/guides/data-export) for import instructions
+  - Pointer supports plain text and TipTap JSON formats
+</Accordion>
+
 <Note>
-  **Need help?** See our [full documentation](https://mintlify.com/docs) or join our [community](https://mintlify.com/community).
+  Need more help? Check out the full documentation or reach out to the Pointer community.
 </Note>
